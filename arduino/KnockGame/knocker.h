@@ -10,7 +10,7 @@ public:
     : input_pin(input_pin), output_pin(output_pin), 
       recording_length(0), last_knock_time(0), is_recording(false) {}
 
-  void playPattern(unsigned int *pattern, uint8_t length);
+  void playPattern(unsigned int *pattern, uint8_t length, uint8_t strength=40);
   uint8_t detectPattern(unsigned int *pattern, uint8_t maxlength, unsigned int timeout = 2000);
 
 private:

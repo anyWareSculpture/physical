@@ -4,15 +4,15 @@
 const int piezo_threshold = 570;
 const int piezo_min_period = 100; // in ms
 
-void Knocker::playPattern(unsigned int *pattern, uint8_t length)
+void Knocker::playPattern(unsigned int *pattern, uint8_t length, uint8_t strength)
 {
   digitalWrite(this->output_pin, 1);
-  delay(40);
+  delay(strength);
   digitalWrite(this->output_pin, 0);
   for (uint8_t i=0;i<length;i++) {
-    delay(pattern[i] > 40 ? pattern[i]-40 : 0);
+    delay(pattern[i] > strength ? pattern[i]-strength : 0);
     digitalWrite(this->output_pin, 1);
-    delay(40);
+    delay(strength);
     digitalWrite(this->output_pin, 0);
   }
 
