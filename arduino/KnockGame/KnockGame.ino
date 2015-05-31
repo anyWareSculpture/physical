@@ -13,7 +13,7 @@
 #include "SerialCommand.h"
 
 // Set to 1 to start in debug mode
-#define DEBUG_MODE 0
+#define DEBUG_MODE 1
 
 #define SOLENOID_PIN 4
 #define PIEZO_PIN 1
@@ -106,6 +106,13 @@ void init_action()
     global_userid = getUserIdArg(userarg);
     // FIXME: Validity check?
   }
+
+  if (global_debug) {
+    Serial.print("DEBUG Initialized ");
+    Serial.print(gamearg);
+    Serial.print(", userid=");
+    Serial.println(global_userid);
+  }
 }
 
 /*!
@@ -120,6 +127,11 @@ void exit_action()
   else if (!strcmp(gamearg, KNOCK_STR)) {
     global_state &= ~STATE_KNOCK;
     digitalWrite(LED2_PIN, 0);
+  }
+
+  if (global_debug) {
+    Serial.print("DEBUG Exited ");
+    Serial.println(gamearg);
   }
 }
 
@@ -144,6 +156,11 @@ void handshake_action()
   }
   int user = getUserIdArg(userarg);
   
+  if (global_debug) {
+    Serial.print("DEBUG External handshake from user ");
+    Serial.println(user);
+  }
+
   // FIXME: Provide physical handshake feedback
   // FIXME: Start/reset timers etc to fade out handshake indicators
 }
@@ -191,10 +208,9 @@ void pattern_action()
     Serial.println();
   }
 
-  // FIXME: Manage playback of ECHO
   digitalWrite(LED1_PIN, 1);
   digitalWrite(LED2_PIN, 0);
-  knocker.playPattern(knock_pattern, knock_pattern_count);
+  knocker.playPattern(knock_pattern, knock_pattern_count, echo ? 17 : 40);
   digitalWrite(LED1_PIN, 0);
   digitalWrite(LED2_PIN, 1);
 }
