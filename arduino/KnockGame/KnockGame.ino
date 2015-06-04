@@ -279,6 +279,7 @@ void reset(bool debug)
   global_debug = debug;
   global_userid = -1;
   global_state = STATE_IDLE;
+  Serial.println();
   Serial.print("HELLO ");
   Serial.print(HANDSHAKE_STR);
   Serial.print(" ");
