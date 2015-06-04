@@ -28,6 +28,9 @@
 // Unused
 #define LED3_PIN 7
 
+// Currently used for vibration on EXIT knock
+#define BUZZER_PIN 8
+
 #define HANDSHAKE_STR "handshake"
 #define KNOCK_STR "knock"
 
@@ -100,6 +103,13 @@ void init_action()
     global_state |= STATE_KNOCK;
     digitalWrite(LED2_PIN, 1);
   }
+  else {
+    if (global_debug) {
+      Serial.print("DEBUG Unknown action ");
+      Serial.println(gamearg);
+    }
+    return;
+  }
 
   char *userarg = sCmd.next();
   if (userarg) {
@@ -127,6 +137,17 @@ void exit_action()
   else if (!strcmp(gamearg, KNOCK_STR)) {
     global_state &= ~STATE_KNOCK;
     digitalWrite(LED2_PIN, 0);
+
+    digitalWrite(BUZZER_PIN, 1);
+    delay(2000);
+    digitalWrite(BUZZER_PIN, 0);
+  }
+  else {
+    if (global_debug) {
+      Serial.print("DEBUG Unknown action ");
+      Serial.println(gamearg);
+    }
+    return;
   }
 
   if (global_debug) {
@@ -247,11 +268,13 @@ void reset(bool debug)
   pinMode(LED1_PIN, OUTPUT);
   pinMode(LED2_PIN, OUTPUT);
   pinMode(LED3_PIN, OUTPUT);
+  pinMode(BUZZER_PIN, OUTPUT);
   pinMode(BUTTON_PIN, INPUT);
  
   digitalWrite(LED1_PIN, 0);
   digitalWrite(LED2_PIN, 0);
   digitalWrite(LED3_PIN, 0);
+  digitalWrite(BUZZER_PIN, 0);
 
   global_debug = debug;
   global_userid = -1;
