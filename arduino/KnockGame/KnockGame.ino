@@ -4,10 +4,20 @@
   This sketch is responsible for the Handshake and Knock interactions
 
   State flags:
-  * Handshake      Handshake active
-  * Knock          Knocking game active
-*/
+  * handshake      Handshake active
+  * knock          Knocking game active
 
+
+  Example commands:
+IDENTITY 0
+KNOCK-INIT
+KNOCK-PATTERN 0 447 318 152 450
+KNOCK-ECHO 1 1000 300 1000 200
+KNOCK-ECHO 1 0 300 300
+KNOCK-EXIT
+
+
+*/
 
 #include "knocker.h"
 #include "SerialCommand.h"
@@ -47,6 +57,8 @@ int global_state = STATE_IDLE;
 int global_userid = -1;
 bool global_debug = false;
 
+const int KNOCK_STRENGTH = 40;
+const int ECHO_STRENGTH = 17;
 const int MAX_PATTERN_LENGTH = 50;
 unsigned int knock_pattern[MAX_PATTERN_LENGTH];
 unsigned int knock_pattern_count = 0;
@@ -77,6 +89,9 @@ void unrecognized(const char *cmd)
   error("unrecognized command", cmd);
 }
 
+/*!
+  RESET [<bool>]
+*/
 void reset_action()
 {
   char *debugarg = sCmd.next();
@@ -86,73 +101,21 @@ void reset_action()
 }
 
 /*!
-  INIT <game> [<userid>]
- */
-void init_action()
-{
-  char *gamearg = sCmd.next();
-  if (!gamearg) {
-    error("protocol error", "wrong # of parameters to INIT");
-    return;
-  }
-  
-  if (!strcmp(gamearg, HANDSHAKE_STR)) {
-    global_state |= STATE_HANDSHAKE;
-  }
-  else if (!strcmp(gamearg, KNOCK_STR)) {
-    global_state |= STATE_KNOCK;
-    digitalWrite(LED2_PIN, 1);
-  }
-  else {
-    if (global_debug) {
-      Serial.print("DEBUG Unknown action ");
-      Serial.println(gamearg);
-    }
-    return;
-  }
-
-  char *userarg = sCmd.next();
-  if (userarg) {
-    global_userid = getUserIdArg(userarg);
-    // FIXME: Validity check?
-  }
-
-  if (global_debug) {
-    Serial.print("DEBUG Initialized ");
-    Serial.print(gamearg);
-    Serial.print(", userid=");
-    Serial.println(global_userid);
-  }
-}
-
-/*!
-  INIT <game>
+  IDENTITY <userid>
 */
-void exit_action()
+void identity_action()
 {
-  char *gamearg = sCmd.next();
-  if (!strcmp(gamearg, HANDSHAKE_STR)) {
-    global_state &= ~STATE_HANDSHAKE;
-  }
-  else if (!strcmp(gamearg, KNOCK_STR)) {
-    global_state &= ~STATE_KNOCK;
-    digitalWrite(LED2_PIN, 0);
-
-    digitalWrite(BUZZER_PIN, 1);
-    delay(2000);
-    digitalWrite(BUZZER_PIN, 0);
-  }
-  else {
-    if (global_debug) {
-      Serial.print("DEBUG Unknown action ");
-      Serial.println(gamearg);
-    }
+  char *userarg = sCmd.next();
+  if (!userarg) {
+    error("protocol error", "wrong # of parameters to IDENTITY");
     return;
   }
+  global_userid = getUserIdArg(userarg);
+  // FIXME: Validity check?
 
   if (global_debug) {
-    Serial.print("DEBUG Exited ");
-    Serial.println(gamearg);
+    Serial.print("DEBUG Identity set, userid=");
+    Serial.println(global_userid);
   }
 }
 
@@ -187,7 +150,38 @@ void handshake_action()
 }
 
 /*!
-  PATTERN <knock-array>
+  KNOCK-INIT
+ */
+void knock_init_action()
+{
+  global_state |= STATE_KNOCK;
+  digitalWrite(LED2_PIN, 1);
+
+  if (global_debug) {
+    Serial.println("DEBUG KNOCK-INIT received");
+  }
+}
+
+/*!
+  KNOCK-EXIT
+*/
+void knock_exit_action()
+{
+  global_state &= ~STATE_KNOCK;
+  digitalWrite(LED2_PIN, 0);
+
+  if (global_debug) {
+    Serial.println("DEBUG KNOCK-EXIT received");
+  }
+
+  // FIXME: We simulate the transition for now
+  digitalWrite(BUZZER_PIN, 1);
+  delay(2000);
+  digitalWrite(BUZZER_PIN, 0);
+}
+
+/*!
+  KNOCK-PATTERN <knock-array>
 
   Examples:
   No initial delay: knock-knock-knock--knock
@@ -200,28 +194,18 @@ void handshake_action()
   PATTERN 1000 500
 
  */
-void pattern_action()
+void knock_pattern_action()
 {
   bool echo = false;
-  char *arg = sCmd.next();
-  if (!arg) {
-    error("protocol error", "wrong # of parameters to PATTERN");
-    return;
-  }
-
-  if (!strcmp(arg, "ECHO")) {
-    echo = true;
-    arg = sCmd.next();
-  }
+  char *arg;
 
   knock_pattern_count = 0;
-  while (arg) {
+  while (arg = sCmd.next()) {
     knock_pattern[knock_pattern_count++] = atoi(arg);
-    arg = sCmd.next();
   }
 
   if (global_debug) {
-    Serial.print("DEBUG Knock received: ");
+    Serial.print("DEBUG KNOCK-PATTERN received: ");
     for (uint8_t i=0;i<knock_pattern_count;i++) {
       Serial.print(knock_pattern[i]);
       Serial.print(" ");
@@ -231,15 +215,56 @@ void pattern_action()
 
   digitalWrite(LED1_PIN, 1);
   digitalWrite(LED2_PIN, 0);
-  knocker.playPattern(knock_pattern, knock_pattern_count, echo ? 17 : 40);
+  knocker.playPattern(knock_pattern, knock_pattern_count, KNOCK_STRENGTH);
+  digitalWrite(LED1_PIN, 0);
+  digitalWrite(LED2_PIN, 1);
+}
+
+/*!
+  KNOCK-ECHO <userid> <knock-array>
+
+  Similar to KNOCK-PATTERN but with a userid as the first argument
+*/
+void knock_echo_action()
+{
+  bool echo = false;
+  char *userarg = sCmd.next();
+  if (!userarg) {
+    error("protocol error", "wrong # of parameters to KNOCK-ECHO");
+    return;
+  }
+
+  int user = getUserIdArg(userarg);
+  // FIXME: Validity check?
+
+  knock_pattern_count = 0;
+  char *arg;
+  while (arg = sCmd.next()) {
+    knock_pattern[knock_pattern_count++] = atoi(arg);
+  }
+
+  if (global_debug) {
+    Serial.print("DEBUG KNOCK_ECHO received: ");
+    Serial.print(user);
+    Serial.print(" ");
+    for (uint8_t i=0;i<knock_pattern_count;i++) {
+      Serial.print(knock_pattern[i]);
+      Serial.print(" ");
+    }
+    Serial.println();
+  }
+
+  digitalWrite(LED1_PIN, 1);
+  digitalWrite(LED2_PIN, 0);
+  knocker.playPattern(knock_pattern, knock_pattern_count, ECHO_STRENGTH);
   digitalWrite(LED1_PIN, 0);
   digitalWrite(LED2_PIN, 1);
 }
 
 // Send pattern over serial
-void send_pattern(unsigned int *pattern, uint8_t length)
+void send_knock_response(unsigned int *pattern, uint8_t length)
 {
-  Serial.print("PATTERN");
+  Serial.print("KNOCK-RESPONSE");
   for (uint8_t i=0;i<length;i++) {
     Serial.print(" ");
     Serial.print(pattern[i]);
@@ -252,10 +277,14 @@ void setup ()
   Serial.begin(115200);
 
   sCmd.addCommand("RESET", reset_action);
-  sCmd.addCommand("INIT", init_action);
-  sCmd.addCommand("EXIT", exit_action);
+  sCmd.addCommand("IDENTITY", identity_action);
+
   sCmd.addCommand("HANDSHAKE", handshake_action);
-  sCmd.addCommand("PATTERN", pattern_action);
+
+  sCmd.addCommand("KNOCK-INIT", knock_init_action);
+  sCmd.addCommand("KNOCK-EXIT", knock_exit_action);
+  sCmd.addCommand("KNOCK-PATTERN", knock_pattern_action);
+  sCmd.addCommand("KNOCK-ECHO", knock_echo_action);
   sCmd.setDefaultHandler(unrecognized);
 
   reset(DEBUG_MODE);
@@ -278,7 +307,7 @@ void reset(bool debug)
 
   global_debug = debug;
   global_userid = -1;
-  global_state = STATE_IDLE;
+  global_state = STATE_HANDSHAKE; // Handshake is always on
   Serial.println();
   Serial.print("HELLO ");
   Serial.print(HANDSHAKE_STR);
@@ -297,7 +326,7 @@ void handleKnock()
 {
   int len = knocker.detectPattern(recorded_pattern, MAX_PATTERN_LENGTH, 2000);
   if (len > 0) { // Detected full pattern
-    send_pattern(recorded_pattern, len);
+    send_knock_response(recorded_pattern, len);
   }
 }
 
