@@ -21,6 +21,10 @@ DISK-EXIT
 #include "./Bounce2.h"
 #include "DiskGame.h"
 
+#if !defined(__AVR_ATmega1280__) && !defined(__AVR_ATmega2560__)
+#error Oops!  Make sure you have 'Arduino Mega or Mega 2560' selected from the 'Tools -> Board' menu.
+#endif
+
 // Top disk
 const int DISK0_LEFT_SENSOR = A0;
 const int DISK0_RIGHT_SENSOR = A5;
