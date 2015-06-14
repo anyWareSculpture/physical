@@ -3,22 +3,6 @@
 /*!
   This sketch is responsible for the Disk game
 
-  State flags:
-  * disk      Disk game active
-*/
-
-#include "./Timer.h"
-#include "./Bounce2.h"
-#include "DiskGame.h"
-
-/*
-  Serial protocol:
-
-  INIT <name>
-  STATE <state>
-  DISK <disk> STATE <state>
-  DISK <disk> POS <pos>
-
   Example commands:
 
 IDENTITY 0
@@ -31,21 +15,11 @@ DISK 2 POS 60 DIR 1 USER 2
 DISK 0 DIR 0 USER 1
 DISK-EXIT
 
- */
+*/
 
-// Colors
-uint32_t RED = Color(255,0,0);
-uint32_t GREEN = Color(0,255,0);
-uint32_t BLACK = Color(0,0,0);
-uint32_t MYBLUE = Color(0,20,147);
-uint32_t MYYELLOW = Color(255, 255, 0);
-uint32_t MYPINK = Color(255,20,147);
-
-const uint32_t locationColor[3] = {
-  MYBLUE,
-  MYYELLOW,
-  MYPINK
-};
+#include "./Timer.h"
+#include "./Bounce2.h"
+#include "DiskGame.h"
 
 // Top disk
 const int DISK0_LEFT_SENSOR = A0;
@@ -347,14 +321,6 @@ Disk disk[3] = {
        DISK2_MOTOR_A, DISK2_MOTOR_B)
 };
 
-void SetUpIR () {
-  // Pin9 is OC2B
-  pinMode(9, OUTPUT);  //IR LED output
-  TCCR2A = _BV(COM2B0) | _BV(WGM21);
-  TCCR2B = _BV(CS20);
-  OCR2A = 209;
-}
-
 void setDiskGameState(int state) {
   diskGameState = state;
   if (state == DISK_GAME_STATE_HOMING) {
@@ -441,7 +407,7 @@ void setup()
 // Reset everything to initial state
 void reset(bool debug)
 {
-  SetUpIR();
+  setupIR();
   for (int i=0;i<3;i++) {
     disk[i].setup();
   }
