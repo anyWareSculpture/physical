@@ -43,9 +43,7 @@ void knock_init_action()
     return;
   }
 
-  if (global_debug) {
-    Serial.println("DEBUG KNOCK-INIT received");
-  }
+  if (global_debug) Serial.println("DEBUG KNOCK-INIT received");
   do_knock_init();
 }
 
@@ -54,9 +52,7 @@ void knock_init_action()
 */
 void knock_exit_action()
 {
-  if (global_debug) {
-    Serial.println("DEBUG KNOCK-EXIT received");
-  }
+  if (global_debug) Serial.println("DEBUG KNOCK-EXIT received");
   do_knock_exit();
 }
 
@@ -103,7 +99,6 @@ void knock_pattern_action()
 */
 void knock_echo_action()
 {
-  bool echo = false;
   char *userarg = sCmd.next();
   if (!userarg) {
     printError("protocol error", "wrong # of parameters to KNOCK-ECHO");
@@ -112,7 +107,7 @@ void knock_echo_action()
 
   int userid = getUserIdArg(userarg);
   if (userid < 0 || userid > 2) {
-    printError("protocol error", "Illegal IDENTITY argument");
+    printError("protocol error", "Illegal <userid> argument");
     return;
   }
 
