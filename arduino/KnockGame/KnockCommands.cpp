@@ -1,6 +1,4 @@
-#include "Arduino.h"
 #include "SerialCommand.h"
-#include "anyware_global.h"
 #include "KnockGame.h"
 
 extern SerialCommand sCmd;

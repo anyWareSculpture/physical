@@ -6,8 +6,9 @@
 // Set to 1 to start in debug mode
 #define DEBUG_MODE 1
 
-extern bool global_debug;
+extern int global_state;
 extern int global_userid;
+extern bool global_debug;
 
 void setupCommonCommands();
 int getUserIdArg(const char *arg);

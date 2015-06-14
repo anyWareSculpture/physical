@@ -20,7 +20,6 @@ KNOCK-EXIT
 */
 
 #include "knocker.h"
-#include "SerialCommand.h"
 #include "KnockGame.h"
 
 #define SOLENOID_PIN 4
@@ -45,9 +44,6 @@ KNOCK-EXIT
 #define USER0_STR "0"
 #define USER1_STR "1"
 #define USER2_STR "2"
-
-int global_state = STATE_IDLE;
-bool global_debug = false;
 
 const int KNOCK_STRENGTH = 40;
 const int ECHO_STRENGTH = 17;

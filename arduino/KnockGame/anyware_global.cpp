@@ -1,7 +1,9 @@
 #include "Arduino.h"
 #include "anyware_global.h"
 
+int global_state;
 int global_userid = -1;
+bool global_debug = false;
 
 // Convert separate R,G,B into packed 32-bit RGB color.
 // Packed format is always RGB, regardless of LED strand color order.
