@@ -3,9 +3,8 @@
 #include "./Adafruit_NeoPixel.h"
 #include "./Bounce2.h"
 
-// Set to 1 for new modules, 0 for old modules
-#define INVERT_STATE 1
-
+// IR sensitivity - higher is less sensitive
+#define SENSITIVITY 50
 
 // Pins
 const int IRPin1 = 4;  // IR pins
@@ -45,14 +44,11 @@ struct IRPixel {
   void setup() {
     pinMode(sensorPin, INPUT_PULLUP);
     irState.attach(sensorPin);
-    irState.interval(100);
+    irState.interval(SENSITIVITY);
   }
   
   void readSensor() {
-    if (irState.update()) {
-       state = irState.read();
-       if (INVERT_STATE) state = !state;
-    }
+    if (irState.update()) state = !irState.read();
   }
 
   bool getState() {
