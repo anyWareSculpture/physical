@@ -14,6 +14,22 @@ PANEL-SET 1 3 100 user2
 PANEL-SET 1 4 100 error
 PANEL-SET 1 5 100 success
 PANEL-PULSE 0 3 100 error
+PANEL-SET 2 6 100 black
+PANEL-SET 2 6 100 user0 easein
+PANEL-SET 2 6 100 user2 easein
+PANEL-SET 2 6 100 success easein
+PANEL-SET 2 6 100 black easein
+PANEL-SET 2 6 100 user2 pop
+PANEL-SET 2 6 100 user2 pulse
+PANEL-SET 2 6 100 white pulse
+PANEL-SET 2 6 100 white pop
+
+PANEL-SET 0 3 100 user0 easein
+PANEL-SET 0 5 100 user1 easein
+PANEL-SET 1 3 100 user2 easein
+PANEL-SET 2 3 100 white easein
+PANEL-SET 2 6 100 success easein
+
 PANEL-STATE success
 PANEL-STATE failure
 PANEL-EXIT
@@ -25,6 +41,8 @@ PANEL-EXIT
 #include "anyware_global.h"
 #include "PanelInterface.h"
 
+// Set to 1 to start in debug mode
+#define DEBUG_MODE 1
 
 // Pins
 const int IRPin1 = 4;  // IR pins
@@ -51,16 +69,22 @@ unsigned long lastActionTime;
 
 // Configuration
 
+// We don't have enough memory to have one easing per pixel, so we have to reuse from a pool of easings
+#define NUM_EASINGS 5
+ColorEasing easings[NUM_EASINGS];
+
 struct IRPixel {
   uint8_t strip;
   uint8_t panel;
   int8_t pixel;
   int8_t sensorPin;
+  int8_t easingid;
 
   Bounce irState;
   bool state;
 
-  IRPixel(uint8_t strip, uint8_t panel, int8_t pixelid, int8_t pin) : strip(strip), panel(panel), pixel(pixelid), sensorPin(pin), state(false) {}
+  IRPixel(uint8_t strip, uint8_t panel, int8_t pixelid, int8_t pin)
+    : strip(strip), panel(panel), pixel(pixelid), easingid(-1), sensorPin(pin), state(false) {}
 
   void setup() {
     if (sensorPin >= 0) {
@@ -89,6 +113,33 @@ struct IRPixel {
 
   uint32_t getColor() {
     return pixel >= 0 ? pixels.getPixelColor(pixel) : 0;
+  }
+
+  void ease(AnywareEasing::EasingType type, uint32_t toColor) {
+    // Find available easing
+    for (uint8_t i=0;i<NUM_EASINGS;i++) {
+      if (!easings[i].active) {
+        easingid = i;
+        break;
+      }
+    }
+    if (easingid >= 0) {
+      easings[easingid].start(type, pixels.getPixelColor(pixel), toColor);
+      Serial.print("Found easing: "); Serial.println(easingid);
+    }
+    else {
+      printError(F("internal error"), F("No easings available"));
+    }
+  }
+
+  bool applyEasing() {
+    if (easingid >=0 && easings[easingid].active) {
+      uint32_t val = easings[easingid].apply();
+      pixels.setPixelColor(pixel, val);
+      if (!easings[easingid].active) easingid = -1;
+      return true;
+    }
+    return false;
   }
 
 };
@@ -138,25 +189,6 @@ void setup() {
   reset(DEBUG_MODE);
 }
 
-void loop()
-{ 
-  handleSerial();
-
-  if (global_state == STATE_READY) {
-    HandleSensors();
-  }
-  else if (global_state == STATE_SUCCESS) {
-    right();
-    global_state = STATE_READY;
-    Serial.println("PANEL-STATE ready");
-  }
-  else if (global_state == STATE_FAILURE) {
-    wrong();
-    global_state = STATE_READY;
-    Serial.println("PANEL-STATE ready");
-  }
-}
-
 void resetColors()
 {
   setAllColors(BLACK);
@@ -170,19 +202,25 @@ void reset(bool debug)
   resetColors();
 
   global_debug = debug;
-  global_userid = -1;
-  global_state = STATE_IDLE;
+  if (debug) {
+    global_userid = 0;
+    global_state = STATE_READY;
+  }
+  else {
+    global_userid = -1;
+    global_state = STATE_IDLE;
+  }
 
   Serial.println();
-  Serial.println("HELLO panel");
-  if (global_debug) Serial.println("DEBUG panel");
+  Serial.println(F("HELLO panel"));
+  if (global_debug) Serial.println(F("DEBUG panel"));
 }
 
 void HandleSensors() {
   bool first = true;
   for (int i=0;i<NUMPANELS;i++) {
     if (irpixels[i].readSensor()) {
-      Serial.print("PANEL ");
+      Serial.print(F("PANEL "));
       Serial.print(irpixels[i].strip);
       Serial.print(" ");
       Serial.print(irpixels[i].panel);
@@ -246,22 +284,22 @@ void do_panel_exit()
   global_state = STATE_IDLE;
 }
 
-void do_panel_set(uint8_t strip, uint8_t panel, uint8_t intensity, uint32_t color)
+void do_panel_set(uint8_t strip, uint8_t panel, uint8_t intensity, uint32_t color, AnywareEasing::EasingType  easing)
 {
   uint8_t id = strip * 10 + panel;
-  irpixels[id].setColor(color);
-  pixels.show();
+  if (easing == AnywareEasing::BINARY) {
+    irpixels[id].setColor(color);
+    pixels.show();
+  }
+  else {
+    irpixels[id].ease(easing, color);
+  }
 }
 
-void do_panel_pulse(uint8_t strip, uint8_t panel, uint8_t intensity, uint32_t color)
+void do_panel_pulse(uint8_t strip, uint8_t panel, uint8_t intensity, uint32_t color, AnywareEasing::EasingType  easing)
 {
   uint8_t id = strip * 10 + panel;
-  uint32_t oldcolor = irpixels[id].getColor();
-  irpixels[id].setColor(color);
-  pixels.show();
-  delay(500);
-  irpixels[id].setColor(oldcolor);
-  pixels.show();
+  irpixels[id].ease(easing, color);
 }
 
 void do_panel_intensity(uint8_t strip, uint8_t intensity)
@@ -273,4 +311,44 @@ void do_panel_intensity(uint8_t strip, uint8_t intensity)
 void do_panel_state(int state)
 {
   global_state = state;
+}
+
+uint32_t animPrevTickTime = 0;
+void handleAnimations()
+{
+  uint32_t currtime = millis();
+
+  bool changed = false;
+  if (currtime - animPrevTickTime >= 1) { // tick
+    animPrevTickTime = currtime;
+    for (uint8_t i=0;i<NUMPANELS;i++) {
+      changed |= irpixels[i].applyEasing();
+    }
+  }
+  if (changed) {
+    //    Serial.println("show");
+    pixels.show();
+  }
+
+}
+
+void loop()
+{ 
+  handleSerial();
+
+  handleAnimations();
+
+  if (global_state == STATE_READY) {
+    HandleSensors();
+  }
+  else if (global_state == STATE_SUCCESS) {
+    right();
+    global_state = STATE_READY;
+    Serial.println(F("PANEL-STATE ready"));
+  }
+  else if (global_state == STATE_FAILURE) {
+    wrong();
+    global_state = STATE_READY;
+    Serial.println(F("PANEL-STATE ready"));
+  }
 }

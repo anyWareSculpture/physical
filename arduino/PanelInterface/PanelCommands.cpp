@@ -10,11 +10,11 @@ extern SerialCommand sCmd;
 void panel_init_action()
 {
   if (global_userid < 0) {
-    printError("protocol error", "DISK-INIT received without IDENTITY");
+    printError(F("protocol error"), F("DISK-INIT received without IDENTITY"));
     return;
   }
 
-  if (global_debug) Serial.println("DEBUG PANEL-INIT received");
+  if (global_debug) Serial.println(F("DEBUG PANEL-INIT received"));
   do_panel_init();
 }
 
@@ -23,7 +23,7 @@ void panel_init_action()
 */
 void panel_exit_action()
 {
-  if (global_debug) Serial.println("DEBUG PANEL-EXIT received");
+  if (global_debug) Serial.println(F("DEBUG PANEL-EXIT received"));
   do_panel_exit();
 }
 
@@ -44,12 +44,35 @@ bool getColor(const char *colorstr, uint32_t &col)
   else if (!strcmp(colorstr, "success")) {
     col = GREEN;
   }
+  else if (!strcmp(colorstr, "black")) {
+    col = BLACK;
+  }
+  else if (!strcmp(colorstr, "white")) {
+    col = WHITE;
+  }
   else {
     return false;
   }
   return true;
 }
 
+bool getEasing(const char *easingstr, AnywareEasing::EasingType &easing)
+{
+  if (!strcmp(easingstr, "easein")) {
+    easing = AnywareEasing::IN_CUBIC;
+  }
+  else if (!strcmp(easingstr, "pulse")) {
+    easing = AnywareEasing::PULSE;
+  }
+  else if (!strcmp(easingstr, "pop")) {
+    easing = AnywareEasing::POP;
+  }
+  else {
+    return false;
+  }
+
+  return true;
+}
 
 /*!
   PANEL-SET <strip> <panel> <intensity> <color> <easing>
@@ -58,34 +81,34 @@ void panel_set_action()
 {
   char *striparg = sCmd.next();
   if (!striparg) {
-    printError("protocol error", "wrong # of parameters to PANEL-SET");
+    printError(F("protocol error"), F("wrong # of parameters to PANEL-SET"));
     return;
   }
   uint8_t strip = atoi(striparg);
   if (strip > 2) {
-    printError("protocol error", "Illegal strip argument");
+    printError(F("protocol error"), F("Illegal strip argument"));
     return;
   }
 
   char *panelarg = sCmd.next();
   if (!panelarg) {
-    printError("protocol error", "wrong # of parameters to PANEL-SET");
+    printError(F("protocol error"), F("wrong # of parameters to PANEL-SET"));
     return;
   }
   uint8_t panel = atoi(panelarg);
   if (panel >= 10) {
-    printError("protocol error", "Illegal panel argument");
+    printError(F("protocol error"), F("Illegal panel argument"));
     return;
   }
 
   char *intensityarg = sCmd.next();
   if (!intensityarg) {
-    printError("protocol error", "wrong # of parameters to PANEL-SET");
+    printError(F("protocol error"), F("wrong # of parameters to PANEL-SET"));
     return;
   }
   uint8_t intensity = atoi(intensityarg);
   if (intensity > 100) {
-    printError("protocol error", "Illegal intensity argument");
+    printError(F("protocol error"), F("Illegal intensity argument"));
     return;
   }
 
@@ -93,28 +116,27 @@ void panel_set_action()
   uint32_t color;
   if (colorarg && strcmp(colorarg, "-")) {
     if (!getColor(colorarg, color)) {
-      printError("protocol error", "Illegal color argument");
+      printError(F("protocol error"), F("Illegal color argument"));
       return;
     }
   }
 
-#if 0 // FIXME: Not implemented
   char *easingarg = sCmd.next();
+  AnywareEasing::EasingType easing = AnywareEasing::BINARY;
   if (easingarg && strcmp(easingarg, "-")) {
-    uint32_t col;
-    if (!getEasing(easingarg)) {
-      printError("protocol error", "Illegal easing argument");
+    if (!getEasing(easingarg, easing)) {
+      printError(F("protocol error"), F("Illegal easing argument"));
       return;
     }
   }
-#endif
 
   if (global_debug) {
-    Serial.print("DEBUG PANEL-SET received: ");
+    Serial.print(F("DEBUG PANEL-SET received: "));
+    Serial.print(easing);
     // FIXME: output
     Serial.println();
   }
-  do_panel_set(strip, panel, intensity, color);
+  do_panel_set(strip, panel, intensity, color, easing);
 }
 
 /*!
@@ -124,34 +146,34 @@ void panel_pulse_action()
 {
   char *striparg = sCmd.next();
   if (!striparg) {
-    printError("protocol error", "wrong # of parameters to PANEL-PULSE");
+    printError(F("protocol error"), F("wrong # of parameters to PANEL-PULSE"));
     return;
   }
   uint8_t strip = atoi(striparg);
   if (strip > 2) {
-    printError("protocol error", "Illegal strip argument");
+    printError(F("protocol error"), F("Illegal strip argument"));
     return;
   }
 
   char *panelarg = sCmd.next();
   if (!panelarg) {
-    printError("protocol error", "wrong # of parameters to PANEL-PULSE");
+    printError(F("protocol error"), F("wrong # of parameters to PANEL-PULSE"));
     return;
   }
   uint8_t panel = atoi(panelarg);
   if (panel >= 10) {
-    printError("protocol error", "Illegal panel argument");
+    printError(F("protocol error"), F("Illegal panel argument"));
     return;
   }
 
   char *intensityarg = sCmd.next();
   if (!intensityarg) {
-    printError("protocol error", "wrong # of parameters to PANEL-PULSE");
+    printError(F("protocol error"), F("wrong # of parameters to PANEL-PULSE"));
     return;
   }
   uint8_t intensity = atoi(intensityarg);
   if (intensity > 100) {
-    printError("protocol error", "Illegal intensity argument");
+    printError(F("protocol error"), F("Illegal intensity argument"));
     return;
   }
 
@@ -159,28 +181,26 @@ void panel_pulse_action()
   uint32_t color;
   if (colorarg && strcmp(colorarg, "-")) {
     if (!getColor(colorarg, color)) {
-      printError("protocol error", "Illegal color argument");
+      printError(F("protocol error"), F("Illegal color argument"));
       return;
     }
   }
 
-#if 0 // FIXME: Not implemented
   char *easingarg = sCmd.next();
+  AnywareEasing::EasingType easing = AnywareEasing::BINARY;
   if (easingarg && strcmp(easingarg, "-")) {
-    uint32_t col;
-    if (!getEasing(easingarg)) {
-      printError("protocol error", "Illegal easing argument");
+    if (!getEasing(easingarg, easing)) {
+      printError(F("protocol error"), F("Illegal easing argument"));
       return;
     }
   }
-#endif
 
   if (global_debug) {
-    Serial.print("DEBUG PANEL-PULSE received: ");
+    Serial.print(F("DEBUG PANEL-PULSE received: "));
     // FIXME: output
     Serial.println();
   }
-  do_panel_pulse(strip, panel, intensity, color);
+  do_panel_pulse(strip, panel, intensity, color, easing);
 }
 
 /*!
@@ -190,23 +210,23 @@ void panel_intensity_action()
 {
   char *striparg = sCmd.next();
   if (!striparg) {
-    printError("protocol error", "wrong # of parameters to PANEL-PULSE");
+    printError(F("protocol error"), F("wrong # of parameters to PANEL-PULSE"));
     return;
   }
   uint8_t strip = atoi(striparg);
   if (strip > 2) {
-    printError("protocol error", "Illegal strip argument");
+    printError(F("protocol error"), F("Illegal strip argument"));
     return;
   }
 
   char *intensityarg = sCmd.next();
   if (!intensityarg) {
-    printError("protocol error", "wrong # of parameters to PANEL-PULSE");
+    printError(F("protocol error"), F("wrong # of parameters to PANEL-PULSE"));
     return;
   }
   uint8_t intensity = atoi(intensityarg);
   if (intensity > 100) {
-    printError("protocol error", "Illegal intensity argument");
+    printError(F("protocol error"), F("Illegal intensity argument"));
     return;
   }
 
@@ -218,8 +238,8 @@ void panel_intensity_action()
 */
 void panel_animate_action()
 {
-  Serial.println("PANEL-STATE animate");
-  Serial.println("PANEL-STATE ready");
+  Serial.println(F("PANEL-STATE animate"));
+  Serial.println(F("PANEL-STATE ready"));
 }
 
 /*!
@@ -236,12 +256,12 @@ void panel_state_action()
     state = STATE_FAILURE;
   }
   else {
-    printError("protocol error", "Illegal argument to PANEL-STATE");
+    printError(F("protocol error"), F("Illegal argument to PANEL-STATE"));
     return;
   }
 
   if (global_debug) {
-    Serial.print("DEBUG PANEL-STATE received: ");
+    Serial.print(F("DEBUG PANEL-STATE received: "));
     Serial.println(arg);
   }
   do_panel_state(state);
