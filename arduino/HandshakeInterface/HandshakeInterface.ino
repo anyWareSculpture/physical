@@ -113,6 +113,7 @@ void do_handshake(bool active, uint8_t user)
 
   if (active) {
     pixels.setPixelColor(pixelid, locationColor[user]);
+    // FIXME: pixels.ease(easing, locationColor[user]);
     pixels.show();
   }
   else {
@@ -120,6 +121,7 @@ void do_handshake(bool active, uint8_t user)
       // FIXME: Start pulsing the "attention LED"
     }
     else {
+      // FIXME: pixels.ease(easing, BLACK);
       pixels.setPixelColor(pixelid, BLACK);
       pixels.show();
     }
