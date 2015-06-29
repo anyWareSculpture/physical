@@ -25,7 +25,7 @@ PANEL-SET 2 6 100 white pulse
 PANEL-SET 2 6 100 white pop
 
 PANEL-SET 0 3 100 user0 easein
-PANEL-SET 0 5 100 user1 easein
+PANEL-SET 0 4 100 user1 easein
 PANEL-SET 1 3 100 user2 easein
 PANEL-SET 2 3 100 white easein
 PANEL-SET 2 6 100 success easein
@@ -36,13 +36,16 @@ PANEL-EXIT
 
  */
 
-#include "./Adafruit_NeoPixel.h"
 #include "./Bounce2.h"
-#include "anyware_global.h"
+#include "anyware_serial.h"
+#include "anyware_colors.h"
 #include "PanelInterface.h"
+#include "NeoPixel.h"
 
 // Set to 1 to start in debug mode
 #define DEBUG_MODE 1
+// Define to start in auto-init mode (sets identity to 0 and state to Ready)
+//#define AUTOINIT
 
 // Pins
 const int IRPin1 = 4;  // IR pins
@@ -63,28 +66,16 @@ const int IRPin10 = 13;
 #define NEOPIXEL_PIN 2
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPANELS, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
 
-int currSensor = -1;   // Storage of which IR is pressed
-int prevSensor = -1;    // Storage of which IR is pressed
-unsigned long lastActionTime;
-
 // Configuration
 
-// We don't have enough memory to have one easing per pixel, so we have to reuse from a pool of easings
-#define NUM_EASINGS 5
-ColorEasing easings[NUM_EASINGS];
-
-struct IRPixel {
-  uint8_t strip;
-  uint8_t panel;
-  int8_t pixel;
+struct IRSensor {
   int8_t sensorPin;
-  int8_t easingid;
 
   Bounce irState;
   bool state;
 
-  IRPixel(uint8_t strip, uint8_t panel, int8_t pixelid, int8_t pin)
-    : strip(strip), panel(panel), pixel(pixelid), easingid(-1), sensorPin(pin), state(false) {}
+  IRSensor(int8_t pin)
+    : sensorPin(pin), state(false) {}
 
   void setup() {
     if (sensorPin >= 0) {
@@ -107,41 +98,21 @@ struct IRPixel {
     return state;
   }
 
-  void setColor(uint32_t col) {
-    if (pixel >= 0) pixels.setPixelColor(pixel, col);
-  }
+};
 
-  uint32_t getColor() {
-    return pixel >= 0 ? pixels.getPixelColor(pixel) : 0;
-  }
+struct IRPixel {
+  uint8_t strip;
+  uint8_t panel;
+  NeoPixel led;
+  IRSensor ir;
 
-  void ease(AnywareEasing::EasingType type, uint32_t toColor) {
-    // Find available easing
-    for (uint8_t i=0;i<NUM_EASINGS;i++) {
-      if (!easings[i].active) {
-        easingid = i;
-        break;
-      }
-    }
-    if (easingid >= 0) {
-      easings[easingid].start(type, pixels.getPixelColor(pixel), toColor);
-      Serial.print("Found easing: "); Serial.println(easingid);
-    }
-    else {
-      printError(F("internal error"), F("No easings available"));
-    }
-  }
+  IRPixel(uint8_t strip, uint8_t panel, int8_t pixelid, int8_t pin)
+    : strip(strip), panel(panel), led(pixelid), ir(pin) {}
 
-  bool applyEasing() {
-    if (easingid >=0 && easings[easingid].active) {
-      uint32_t val = easings[easingid].apply();
-      pixels.setPixelColor(pixel, val);
-      if (!easings[easingid].active) easingid = -1;
-      return true;
-    }
-    return false;
+  void setup() {
+    led.setup();
+    ir.setup();
   }
-
 };
 
 IRPixel irpixels[NUMPANELS] = {
@@ -178,15 +149,15 @@ IRPixel irpixels[NUMPANELS] = {
 };
 
 void setAllColors(uint32_t col) {
-  for (int i = 0; i < NUMPANELS; i++) irpixels[i].setColor(col);
+  for (int i = 0; i < NUMPANELS; i++) irpixels[i].led.setColor(col);
   pixels.show(); // This sends the updated pixel color to the hardware. 
 }
 
 void setup() {
   Serial.begin(115200);
 
-  setupCommands();
   reset(DEBUG_MODE);
+  setupCommands();
 }
 
 void resetColors()
@@ -202,14 +173,13 @@ void reset(bool debug)
   resetColors();
 
   global_debug = debug;
-  if (debug) {
-    global_userid = 0;
-    global_state = STATE_READY;
-  }
-  else {
-    global_userid = -1;
-    global_state = STATE_IDLE;
-  }
+  global_userid = -1;
+  global_state = STATE_IDLE;
+
+#ifdef AUTOINIT
+  global_userid = 0;
+  global_state = STATE_READY;
+#endif
 
   Serial.println();
   Serial.println(F("HELLO panel"));
@@ -219,29 +189,22 @@ void reset(bool debug)
 void HandleSensors() {
   bool first = true;
   for (int i=0;i<NUMPANELS;i++) {
-    if (irpixels[i].readSensor()) {
+    if (irpixels[i].ir.readSensor()) {
       Serial.print(F("PANEL "));
       Serial.print(irpixels[i].strip);
       Serial.print(" ");
       Serial.print(irpixels[i].panel);
       Serial.print(" ");
-      Serial.println(irpixels[i].getState() ? 1 : 0);
+      Serial.println(irpixels[i].ir.getState() ? 1 : 0);
     }
   }
 }
 
 void wrong() {
-  setAllColors(BLACK);
-
-  if (currSensor >= 0) {
-    irpixels[currSensor].setColor(RED);
-    pixels.show();
-  }
-
+  setAllColors(RED);
   delay(1000);
   setAllColors(BLACK);
   resetColors();
-  lastActionTime = 0;
 }
 
 void right() {
@@ -252,13 +215,12 @@ void right() {
     delay(200);     
   }
   resetColors();
-  lastActionTime = 0;
 }
 
 // Returns the index of the first active sensor or -1 if no sensors are active
 int getCurrentSensor() {
   for (int i=0;i<NUMPANELS;i++) {
-    if (irpixels[i].getState()) return i;
+    if (irpixels[i].ir.getState()) return i;
   }
   return -1; 
 }
@@ -267,7 +229,7 @@ int getCurrentSensor() {
 uint8_t numSensorsActive() {
   int count = 0;
   for (int i=0;i<NUMPANELS;i++) {
-    if (irpixels[i].getState()) {
+    if (irpixels[i].ir.getState()) {
       count++;
     }
   }
@@ -288,18 +250,18 @@ void do_panel_set(uint8_t strip, uint8_t panel, uint8_t intensity, uint32_t colo
 {
   uint8_t id = strip * 10 + panel;
   if (easing == AnywareEasing::BINARY) {
-    irpixels[id].setColor(color);
+    irpixels[id].led.setColor(color);
     pixels.show();
   }
   else {
-    irpixels[id].ease(easing, color);
+    irpixels[id].led.ease(easing, color);
   }
 }
 
 void do_panel_pulse(uint8_t strip, uint8_t panel, uint8_t intensity, uint32_t color, AnywareEasing::EasingType  easing)
 {
   uint8_t id = strip * 10 + panel;
-  irpixels[id].ease(easing, color);
+  irpixels[id].led.ease(easing, color);
 }
 
 void do_panel_intensity(uint8_t strip, uint8_t intensity)
@@ -322,7 +284,7 @@ void handleAnimations()
   if (currtime - animPrevTickTime >= 1) { // tick
     animPrevTickTime = currtime;
     for (uint8_t i=0;i<NUMPANELS;i++) {
-      changed |= irpixels[i].applyEasing();
+      changed |= irpixels[i].led.applyEasing();
     }
   }
   if (changed) {

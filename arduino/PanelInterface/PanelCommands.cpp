@@ -1,6 +1,6 @@
-#include "SerialCommand.h"
-#include "anyware_global.h"
 #include "PanelInterface.h"
+#include "anyware_serial.h"
+#include "anyware_colors.h"
 
 extern SerialCommand sCmd;
 
@@ -25,53 +25,6 @@ void panel_exit_action()
 {
   if (global_debug) Serial.println(F("DEBUG PANEL-EXIT received"));
   do_panel_exit();
-}
-
-bool getColor(const char *colorstr, uint32_t &col)
-{
-  if (!strcmp(colorstr, "user0")) {
-    col = locationColor[0];
-  }
-  else if (!strcmp(colorstr, "user1")) {
-    col = locationColor[1];
-  }
-  else if (!strcmp(colorstr, "user2")) {
-    col = locationColor[2];
-  }
-  else if (!strcmp(colorstr, "error")) {
-    col = RED;
-  }
-  else if (!strcmp(colorstr, "success")) {
-    col = GREEN;
-  }
-  else if (!strcmp(colorstr, "black")) {
-    col = BLACK;
-  }
-  else if (!strcmp(colorstr, "white")) {
-    col = WHITE;
-  }
-  else {
-    return false;
-  }
-  return true;
-}
-
-bool getEasing(const char *easingstr, AnywareEasing::EasingType &easing)
-{
-  if (!strcmp(easingstr, "easein")) {
-    easing = AnywareEasing::IN_CUBIC;
-  }
-  else if (!strcmp(easingstr, "pulse")) {
-    easing = AnywareEasing::PULSE;
-  }
-  else if (!strcmp(easingstr, "pop")) {
-    easing = AnywareEasing::POP;
-  }
-  else {
-    return false;
-  }
-
-  return true;
 }
 
 /*!
@@ -124,7 +77,7 @@ void panel_set_action()
   char *easingarg = sCmd.next();
   AnywareEasing::EasingType easing = AnywareEasing::BINARY;
   if (easingarg && strcmp(easingarg, "-")) {
-    if (!getEasing(easingarg, easing)) {
+    if (!AnywareEasing::getEasing(easingarg, easing)) {
       printError(F("protocol error"), F("Illegal easing argument"));
       return;
     }
@@ -189,7 +142,7 @@ void panel_pulse_action()
   char *easingarg = sCmd.next();
   AnywareEasing::EasingType easing = AnywareEasing::BINARY;
   if (easingarg && strcmp(easingarg, "-")) {
-    if (!getEasing(easingarg, easing)) {
+    if (!AnywareEasing::getEasing(easingarg, easing)) {
       printError(F("protocol error"), F("Illegal easing argument"));
       return;
     }
@@ -271,11 +224,13 @@ void setupCommands()
 { 
   setupCommonCommands();
 
-  sCmd.addCommand("PANEL-INIT", panel_init_action);
-  sCmd.addCommand("PANEL-EXIT", panel_exit_action);
-  sCmd.addCommand("PANEL-SET", panel_set_action);
-  sCmd.addCommand("PANEL-PULSE", panel_pulse_action);
-  sCmd.addCommand("PANEL-INTENSITY", panel_intensity_action);
-  sCmd.addCommand("PANEL-ANIMATE", panel_animate_action);
-  sCmd.addCommand("PANEL-STATE", panel_state_action);
+  Serial.println(F("SUPPORTED"));
+  addCommand("PANEL-INIT", panel_init_action);
+  addCommand("PANEL-EXIT", panel_exit_action);
+  addCommand("PANEL-SET", panel_set_action, " (0|1|2)");
+  addCommand("PANEL-PULSE", panel_pulse_action, " (0|1|2)");
+  addCommand("PANEL-INTENSITY", panel_intensity_action, " (0|1|2)");
+  addCommand("PANEL-ANIMATE", panel_animate_action);
+  addCommand("PANEL-STATE", panel_state_action);
+  Serial.println(F("ENDSUPPORTED"));
 }
