@@ -246,6 +246,7 @@ void do_panel_exit()
   global_state = STATE_IDLE;
 }
 
+// FIXME: We don't currently support duration
 void do_panel_set(uint8_t strip, uint8_t panel, uint8_t intensity, uint32_t color, AnywareEasing::EasingType  easing)
 {
   color = applyIntensity(color, intensity);
@@ -259,6 +260,7 @@ void do_panel_set(uint8_t strip, uint8_t panel, uint8_t intensity, uint32_t colo
   }
 }
 
+// FIXME: We don't currently support duration
 void do_panel_pulse(uint8_t strip, uint8_t panel, uint8_t intensity, uint32_t color, AnywareEasing::EasingType  easing)
 {
   color = applyIntensity(color, intensity);
