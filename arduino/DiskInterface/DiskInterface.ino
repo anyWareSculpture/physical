@@ -21,6 +21,7 @@ DISK-EXIT
 PANEL-SET 3 0 100 user0
 PANEL-SET 3 1 100 user1 easein
 PANEL-SET 3 2 100 user2 easein
+PANEL-SET 4 0 100 user0
 
 */
 
@@ -83,7 +84,7 @@ const int REV = TEETH*2;
 #define USER2_STR "2"
 
 // Which pin on the Arduino is connected to the NeoPixels?
-#define NEOPIXEL_PIN 2
+#define NEOPIXEL_PIN 52
 // Right now, using a ring of 16 pixels
 #define NUMNEOPIXELS 16
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMNEOPIXELS, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
@@ -206,6 +207,7 @@ struct Disk {
       break;
     case DISK_HOMING:
       Serial.println(" homing");
+      direction = DIR_CCW;
       break;
     }
   }
@@ -281,9 +283,6 @@ struct Disk {
       if (isHome()) {
         setState(DISK_READY);
         actualPosition = 0;
-      }
-      else {
-        direction = DIR_CCW;
       }
     }
     else if (state == DISK_READY) {
@@ -361,13 +360,18 @@ void setup()
   setupCommands();
 }
 
+void setAllColors(uint32_t col) {
+  for (int i = 0; i < NUMNEOPIXELS; i++) neopixels[i].setColor(col);
+  pixels.show(); // This sends the updated pixel color to the hardware. 
+}
+
 // Reset everything to initial state
 void reset(bool debug)
 {
   setupIR();
-  for (int i=0;i<3;i++) {
-    disk[i].setup();
-  }
+  for (int i=0;i<3;i++) disk[i].setup();
+  pixels.begin(); // This initializes the NeoPixel library.
+  setAllColors(BLACK);
   setGlobalState(STATE_IDLE);
 
   global_debug = debug;
@@ -487,7 +491,7 @@ void loop()
   handleSerial();
   handleAnimations();
 
-  if (global_state & STATE_READY) {
+  if (global_state != STATE_IDLE) {
     manageDiskGame();
   }
 }
