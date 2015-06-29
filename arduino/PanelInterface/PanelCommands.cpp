@@ -85,8 +85,15 @@ void panel_set_action()
 
   if (global_debug) {
     Serial.print(F("DEBUG PANEL-SET received: "));
+    Serial.print(strip);
+    Serial.print(" ");
+    Serial.print(panel);
+    Serial.print(" ");
+    Serial.print(intensity);
+    Serial.print(" ");
+    Serial.print(color, HEX);
+    Serial.print(" ");
     Serial.print(easing);
-    // FIXME: output
     Serial.println();
   }
   do_panel_set(strip, panel, intensity, color, easing);
@@ -150,7 +157,15 @@ void panel_pulse_action()
 
   if (global_debug) {
     Serial.print(F("DEBUG PANEL-PULSE received: "));
-    // FIXME: output
+    Serial.print(strip);
+    Serial.print(" ");
+    Serial.print(panel);
+    Serial.print(" ");
+    Serial.print(intensity);
+    Serial.print(" ");
+    Serial.print(color, HEX);
+    Serial.print(" ");
+    Serial.print(easing);
     Serial.println();
   }
   do_panel_pulse(strip, panel, intensity, color, easing);
