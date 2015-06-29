@@ -227,9 +227,9 @@ void setupCommands()
   Serial.println(F("SUPPORTED"));
   addCommand("PANEL-INIT", panel_init_action);
   addCommand("PANEL-EXIT", panel_exit_action);
-  addCommand("PANEL-SET", panel_set_action, " (0|1|2)");
-  addCommand("PANEL-PULSE", panel_pulse_action, " (0|1|2)");
-  addCommand("PANEL-INTENSITY", panel_intensity_action, " (0|1|2)");
+  addCommand("PANEL-SET", panel_set_action, " [012]");
+  addCommand("PANEL-PULSE", panel_pulse_action, " [012]");
+  addCommand("PANEL-INTENSITY", panel_intensity_action, " [012]");
   addCommand("PANEL-ANIMATE", panel_animate_action);
   addCommand("PANEL-STATE", panel_state_action);
   Serial.println(F("ENDSUPPORTED"));

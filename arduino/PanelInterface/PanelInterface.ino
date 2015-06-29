@@ -178,7 +178,7 @@ void reset(bool debug)
 
 #ifdef AUTOINIT
   global_userid = 0;
-  global_state = STATE_READY;
+  do_panel_init();
 #endif
 
   Serial.println();
