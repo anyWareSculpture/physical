@@ -23,7 +23,8 @@ void AnywareEasing::start(uint8_t type)
   this->type = type;
   this->active = true;
   this->startTime = millis();
-  
+  this->currval = 0;
+
   switch (type) {
   case BINARY:
     duration = 0;
@@ -38,15 +39,23 @@ void AnywareEasing::start(uint8_t type)
   case POP:
     duration = 500;
     break;
+  case BINARY_PULSE:
+    duration = 200;
+    break;
   default:
     break;
   }
-  
 }
 
-uint8_t AnywareEasing::apply()
+uint32_t AnywareEasing::end()
 {
-  uint32_t dt = millis()-startTime;
+  active = false;
+  return apply(startTime + duration);
+}
+
+uint8_t AnywareEasing::apply(uint32_t t)
+{
+  uint32_t dt = t-startTime;
   float v = 0;
   switch (type) {
   case BINARY:
@@ -70,12 +79,15 @@ uint8_t AnywareEasing::apply()
   case POP:
     v = Easing::easeOutCubic(dt, 128, -128, duration);
     break;
+  case BINARY_PULSE:
+    v = (dt < duration) ? 255.0 : 0.0;
+    break;
   default:
     break;
   }
   
   if (dt >= duration) active = false;
   
-  uint8_t val = (uint8_t)v;
-  return val;
+  this->currval = (uint8_t)v;
+  return this->currval;
 }
