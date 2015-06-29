@@ -1,12 +1,5 @@
 #include "SerialCommand.h"
-#include "anyware_global.h"
-
-SerialCommand sCmd;
-
-void handleSerial()
-{
-  sCmd.readSerial();
-}
+#include "anyware_serial.h"
 
 void unrecognized(const char *cmd)
 {
