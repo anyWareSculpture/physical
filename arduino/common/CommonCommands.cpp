@@ -27,8 +27,12 @@ void identity_action()
     printError(F("protocol error"), F("wrong # of parameters to IDENTITY"));
     return;
   }
-  global_userid = getUserIdArg(userarg);
-  // FIXME: Validity check?
+  uint8_t userid = getUserIdArg(userarg);
+  if (userid > 2) {
+    printError(F("protocol error"), F("Illegal userid argument"));
+    return;
+  }
+  global_userid = userid;
 
   if (global_debug) {
     Serial.print(F("DEBUG Identity set, userid="));
