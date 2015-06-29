@@ -7,6 +7,13 @@ ColorEasing easings[NUM_EASINGS];
 
 void NeoPixel::ease(AnywareEasing::EasingType type, uint32_t toColor)
 {
+  // If we're already easing, end the easing and start another one
+  if (easingid >= 0) {
+    uint32_t val = easings[easingid].end();
+    pixels.setPixelColor(pixel, val);
+    easingid = -1;
+  }
+
   // Find available easing
   for (uint8_t i=0;i<NUM_EASINGS;i++) {
     if (!easings[i].active) {
@@ -25,11 +32,15 @@ void NeoPixel::ease(AnywareEasing::EasingType type, uint32_t toColor)
 
 bool NeoPixel::applyEasing()
 {
+  bool retval = false;
   if (easingid >=0 && easings[easingid].active) {
-    uint32_t val = easings[easingid].apply();
-    pixels.setPixelColor(pixel, val);
+    uint8_t oldval = easings[easingid].currval;
+    uint32_t col = easings[easingid].applyColor(millis());
+    if (oldval != easings[easingid].currval) {
+      pixels.setPixelColor(pixel, col);
+      retval = true;
+    }
     if (!easings[easingid].active) easingid = -1;
-    return true;
   }
-  return false;
+  return retval;
 }

@@ -12,20 +12,23 @@ struct AnywareEasing {
     IN_CUBIC,
     OUT_CUBIC,
     PULSE,
-    POP
+    POP,
+    BINARY_PULSE
   };
 
   bool active;
+  uint8_t currval;
   uint8_t type;
   uint32_t startTime;
   uint16_t duration;
   
-  AnywareEasing() : active(false) {  }
+  AnywareEasing() : active(false), currval(0) {  }
 
   static bool getEasing(const char *easingstr, AnywareEasing::EasingType &easing);
 
-  void start(uint8_t type);
-  uint8_t apply();
+  virtual void start(uint8_t type);
+  virtual uint32_t end();
+  virtual uint8_t apply(uint32_t t);
 };
 
 struct ColorEasing : public AnywareEasing {
@@ -40,8 +43,8 @@ struct ColorEasing : public AnywareEasing {
     this->toColor = toColor;
   }
 
-  uint32_t apply() {
-    uint8_t val = AnywareEasing::apply();
+  uint32_t applyColor(uint32_t t) {
+    uint8_t val = apply(t);
     return scaleColor(fromColor, toColor, val);
   }
 };

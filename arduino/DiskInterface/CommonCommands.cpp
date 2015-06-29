@@ -14,7 +14,7 @@ void reset_action()
   char *debugarg = sCmd.next();
   bool debug = false;
   if (debugarg) debug = atoi(debugarg);
-  reset(debug);
+  resetInterface(debug);
 }
 
 /*!
@@ -40,9 +40,22 @@ void identity_action()
   }
 }
 
+/*!
+  INIT
+*/
+void init_action()
+{
+  global_initialized = true;
+  if (global_debug) {
+    Serial.println(F("DEBUG INIT received"));
+  }
+  initInterface();
+}
+
 void setupCommonCommands()
 { 
   sCmd.addCommand("RESET", reset_action);
   sCmd.addCommand("IDENTITY", identity_action);
+  sCmd.addCommand("INIT", init_action);
   sCmd.setDefaultHandler(unrecognized);
 }

@@ -155,7 +155,7 @@ struct RgbLED {
   }
 
   void applyEasing() {
-    if (easing.active) setColor(easing.apply());
+    if (easing.active) setColor(easing.applyColor(millis()));
   }
 
 };
@@ -380,7 +380,7 @@ void setup()
 {
   Serial.begin(115200);
 
-  reset(DEBUG_MODE);
+  resetInterface(DEBUG_MODE);
   setupCommands();
 }
 
@@ -390,19 +390,21 @@ void setAllColors(uint32_t col) {
 }
 
 // Reset everything to initial state
-void reset(bool debug)
+void resetInterface(bool debug)
 {
   setupIR();
   for (int i=0;i<3;i++) disk[i].setup();
   pixels.begin(); // This initializes the NeoPixel library.
   setAllColors(BLACK);
-  setGlobalState(STATE_IDLE);
+  setGlobalState(STATE_READY);
 
+  global_initialized = false;
   global_debug = debug;
   global_userid = -1;
+
 #ifdef AUTOINIT
+  global_initialized = true;
   global_userid = 0;
-  do_disk_init();
 #endif
 
   Serial.println();
@@ -410,28 +412,7 @@ void reset(bool debug)
   if (global_debug) Serial.println("DEBUG disk");
 }
 
-/*!
-  DISK-INIT
-
-  Initialize disk game. This just allows the Arduino to listen to DISK commands.
- */
-void do_disk_init()
-{
-  setGlobalState(STATE_READY);
-}
-
-/*!
-  DISK-EXIT
-
-  Exit disk game. Stop any currently running animation or process.
-  No longer listen to DISK commands.
-*/
-void do_disk_exit()
-{
-  setGlobalState(STATE_IDLE);
-
-  timer.stop(blinkerIdx);
-  for (int i=0;i<3;i++) disk[i].reset();
+void initInterface() {
 }
 
 /*!
@@ -516,12 +497,12 @@ void handleAnimations()
 
 void loop()
 {
-  timer.update();
   handleSerial();
-  handleAnimations();
 
-  if (global_state != STATE_IDLE) {
-    manageDiskGame();
-  }
+  if (!global_initialized) return;
+
+  timer.update();
+  handleAnimations();
+  manageDiskGame();
 }
 

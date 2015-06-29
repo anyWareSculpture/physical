@@ -2,47 +2,13 @@
 #include "anyware_serial.h"
 
 /*!
-  DISK-INIT
-
-  Initialize disk game. This just allows the Arduino to listen to DISK commands.
- */
-void disk_init_action()
-{
-  if (global_userid < 0) {
-    printError("protocol error", "DISK-INIT received without IDENTITY");
-    return;
-  }
-
-  if (global_debug) {
-    Serial.println("DEBUG DISK-INIT received");
-  }
-
-  do_disk_init();
-}
-
-/*!
-  DISK-EXIT
-
-  Exit disk game. Stop any currently running animation or process.
-  No longer listen to DISK commands.
-*/
-void disk_exit_action()
-{
-  if (global_debug) {
-    Serial.println("DEBUG DISK-EXIT received");
-  }
-
-  do_disk_exit();
-}
-
-/*!
   DISK-RESET
 
   Resets the game, home the disks and afterwards to into "ready" mode.
 */
 void disk_reset_action()
 {
-  if (global_state == STATE_IDLE) return;
+  if (!global_initialized) return;
 
   if (global_debug) {
     Serial.println("DEBUG DISK-RESET received");
@@ -57,7 +23,7 @@ void disk_reset_action()
 */
 void disk_action()
 {
-  if (global_state == STATE_IDLE) return;
+  if (!global_initialized) return;
 
   char *arg = sCmd.next();
   uint8_t diskid = atoi(arg);
@@ -296,10 +262,8 @@ void setupCommands()
   setupCommonCommands();
 
   Serial.println(F("SUPPORTED"));
-  addCommand("DISK-INIT", disk_init_action);
   addCommand("DISK-RESET", disk_reset_action);
   addCommand("DISK", disk_action);
-  addCommand("DISK-EXIT", disk_exit_action);
 
   addCommand("PANEL-SET", panel_set_action, " [34]");
   addCommand("PANEL-PULSE", panel_pulse_action, " [34]");
