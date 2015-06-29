@@ -428,6 +428,7 @@ void do_disk(uint8_t diskid, int userid, int pos, Direction dir)
 
 void do_panel_set(uint8_t strip, uint8_t panel, uint8_t intensity, uint32_t color, AnywareEasing::EasingType  easing)
 {
+  color = applyIntensity(color, intensity);
   if (strip == 3) { // RGB LEDs
     rgbled[panel].setColor(color);
   }
@@ -448,6 +449,7 @@ void do_panel_pulse(uint8_t strip, uint8_t panel, uint8_t intensity, uint32_t co
   do_panel_set(strip, panel, intensity, color, easing);
 }
 
+// FIXME: We don't currently support per-strip intensity, only global intensity
 void do_panel_intensity(uint8_t strip, uint8_t intensity)
 {
   if (strip == 3) { // RGB LEDs
