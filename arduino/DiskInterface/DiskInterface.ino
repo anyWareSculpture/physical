@@ -18,10 +18,13 @@ DISK 1 DIR -1 USER 1
 DISK 2 DIR -1 USER 1
 DISK-EXIT
 
-PANEL-SET 3 0 100 user0
+PANEL-SET 3 0 100 user0 easein
+PANEL-SET 3 0 100 white pulse
+PANEL-SET 3 0 100 white pop
 PANEL-SET 3 1 100 user1 easein
 PANEL-SET 3 2 100 user2 easein
 PANEL-SET 4 0 100 user0
+PANEL-INTENSITY 3 50
 
 */
 
@@ -105,9 +108,11 @@ int8_t blinkerIdx = -1;
 struct RgbLED {
   int redPin,greenPin,bluePin;
   uint32_t currColor;
+  uint8_t intensity;
+  ColorEasing easing;
 
   RgbLED(int r, int g, int b) :
-    redPin(r), greenPin(g), bluePin(b) {}
+    redPin(r), greenPin(g), bluePin(b), currColor(BLACK), intensity(100) {}
 
   void setup() {
     pinMode(redPin, OUTPUT);
@@ -118,6 +123,7 @@ struct RgbLED {
 
   void reset() {
     setColor(BLACK);
+    intensity = 100;
   }
   
   uint32_t getCurrentColor() {
@@ -126,13 +132,31 @@ struct RgbLED {
 
   void setColor(uint32_t rgb) {
     currColor = rgb;
+    writeColor(currColor);
+  }
+
+  void setIntensity(uint8_t intensity) {
+    this->intensity = intensity;
+    uint32_t col = applyIntensity(currColor, intensity);
+    writeColor(col);
+  }
+
+  void writeColor(uint32_t rgb) {
     uint8_t r = (uint8_t)(rgb >> 16);
     uint8_t g = (uint8_t)(rgb >>  8);
     uint8_t b = (uint8_t)rgb;
     analogWrite(redPin, 255-r);	 
     analogWrite(bluePin, 255-b);
     analogWrite(greenPin, 255-g);
-  } 
+  }
+
+  void ease(AnywareEasing::EasingType type, uint32_t toColor) {
+    easing.start(type, currColor, toColor);
+  }
+
+  void applyEasing() {
+    if (easing.active) setColor(easing.apply());
+  }
 
 };
 
@@ -434,7 +458,12 @@ void do_panel_set(uint8_t strip, uint8_t panel, uint8_t intensity, uint32_t colo
 {
   color = applyIntensity(color, intensity);
   if (strip == 3) { // RGB LEDs
-    rgbled[panel].setColor(color);
+    if (easing == AnywareEasing::BINARY) {
+      rgbled[panel].setColor(color);
+    }
+    else {
+      rgbled[panel].ease(easing, color);
+    }
   }
   else if (strip == 4) { // NeoPixels
     uint8_t id = panel;
@@ -453,13 +482,13 @@ void do_panel_pulse(uint8_t strip, uint8_t panel, uint8_t intensity, uint32_t co
   do_panel_set(strip, panel, intensity, color, easing);
 }
 
-// FIXME: We don't currently support per-strip intensity, only global intensity
 void do_panel_intensity(uint8_t strip, uint8_t intensity)
 {
   if (strip == 3) { // RGB LEDs
-    // FIXME: Implement
+    for (uint8_t i=0;i<3;i++) rgbled[i].setIntensity(intensity);
   }
   else if (strip == 4) { // NeoPixels
+    // FIXME: We don't currently support per-strip intensity, only global intensity
     pixels.setBrightness(255*intensity/100);
     pixels.show();
   }
@@ -470,13 +499,13 @@ void handleAnimations()
 {
   uint32_t currtime = millis();
 
-  // FIXME: Handle RGB LEDs
   bool changed = false;
   if (currtime - animPrevTickTime >= 1) { // tick
     animPrevTickTime = currtime;
     for (uint8_t i=0;i<NUMNEOPIXELS;i++) {
       changed |= neopixels[i].applyEasing();
     }
+    for (uint8_t i=0;i<3;i++) rgbled[i].applyEasing();
   }
   if (changed) {
     //    Serial.println("show");
