@@ -5,29 +5,6 @@
 extern SerialCommand sCmd;
 
 /*!
-  PANEL-INIT
- */
-void panel_init_action()
-{
-  if (global_userid < 0) {
-    printError(F("protocol error"), F("DISK-INIT received without IDENTITY"));
-    return;
-  }
-
-  if (global_debug) Serial.println(F("DEBUG PANEL-INIT received"));
-  do_panel_init();
-}
-
-/*!
-  PANEL-EXIT
-*/
-void panel_exit_action()
-{
-  if (global_debug) Serial.println(F("DEBUG PANEL-EXIT received"));
-  do_panel_exit();
-}
-
-/*!
   PANEL-SET <strip> <panel> <intensity> <color> <easing>
 */
 void panel_set_action()
@@ -147,10 +124,11 @@ void panel_pulse_action()
   }
 
   char *easingarg = sCmd.next();
-  AnywareEasing::EasingType easing = AnywareEasing::BINARY;
+  AnywareEasing::EasingType easing = AnywareEasing::BINARY_PULSE;
   if (easingarg && strcmp(easingarg, "-")) {
     if (!AnywareEasing::getEasing(easingarg, easing)) {
       printError(F("protocol error"), F("Illegal easing argument"));
+      printError(F("protocol error"), easingarg);
       return;
     }
   }
@@ -240,8 +218,6 @@ void setupCommands()
   setupCommonCommands();
 
   Serial.println(F("SUPPORTED"));
-  addCommand("PANEL-INIT", panel_init_action);
-  addCommand("PANEL-EXIT", panel_exit_action);
   addCommand("PANEL-SET", panel_set_action, " [012]");
   addCommand("PANEL-PULSE", panel_pulse_action, " [012]");
   addCommand("PANEL-INTENSITY", panel_intensity_action, " [012]");

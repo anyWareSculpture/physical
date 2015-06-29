@@ -6,14 +6,14 @@
   Example commands:
 
 IDENTITY 0
-PANEL-INIT
+INIT
 PANEL-SET 0 3 100 user0
 PANEL-SET 0 4 25 user0
 PANEL-SET 0 5 100 user1
 PANEL-SET 1 3 100 user2
 PANEL-SET 1 4 100 error
 PANEL-SET 1 5 100 success
-PANEL-PULSE 0 3 100 error
+PANEL-PULSE 0 3 100 success
 PANEL-SET 2 6 100 black
 PANEL-SET 2 6 100 user0 easein
 PANEL-SET 2 6 100 user2 easein
@@ -29,6 +29,8 @@ PANEL-SET 0 4 100 user1 easein
 PANEL-SET 1 3 100 user2 easein
 PANEL-SET 2 3 100 white easein
 PANEL-SET 2 6 100 success easein
+PANEL-PULSE 2 6 100 success
+PANEL-SET 2 6 100 black
 
 PANEL-STATE success
 PANEL-STATE failure
@@ -45,7 +47,7 @@ PANEL-EXIT
 // Set to 1 to start in debug mode
 #define DEBUG_MODE 1
 // Define to start in auto-init mode (sets identity to 0 and state to Ready)
-//#define AUTOINIT
+#define AUTOINIT
 
 // Pins
 const int IRPin1 = 4;  // IR pins
@@ -156,7 +158,7 @@ void setAllColors(uint32_t col) {
 void setup() {
   Serial.begin(115200);
 
-  reset(DEBUG_MODE);
+  resetInterface(DEBUG_MODE);
   setupCommands();
 }
 
@@ -165,25 +167,29 @@ void resetColors()
   setAllColors(BLACK);
 }
 
-void reset(bool debug)
+void resetInterface(bool debug)
 {
   setupIR();
   for (int i=0;i<NUMPANELS;i++) irpixels[i].setup();
   pixels.begin(); // This initializes the NeoPixel library.
   resetColors();
 
+  global_initialized = false;
   global_debug = debug;
   global_userid = -1;
-  global_state = STATE_IDLE;
+  global_state = STATE_READY;
 
 #ifdef AUTOINIT
+  global_initialized = true;
   global_userid = 0;
-  do_panel_init();
 #endif
 
   Serial.println();
   Serial.println(F("HELLO panel"));
   if (global_debug) Serial.println(F("DEBUG panel"));
+}
+
+void initInterface() {
 }
 
 void HandleSensors() {
@@ -234,16 +240,6 @@ uint8_t numSensorsActive() {
     }
   }
   return count;
-}
-
-void do_panel_init()
-{
-  global_state = STATE_READY;
-}
-
-void do_panel_exit()
-{
-  global_state = STATE_IDLE;
 }
 
 // FIXME: We don't currently support duration
@@ -302,6 +298,8 @@ void handleAnimations()
 void loop()
 { 
   handleSerial();
+
+  if (!global_initialized) return;
 
   handleAnimations();
 

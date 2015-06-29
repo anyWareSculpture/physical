@@ -7,11 +7,9 @@
 #define NUMPANELS 30
 
 // State flags
-#define STATE_IDLE      0x00
-#define STATE_PLAYBACK  0x01
-#define STATE_READY     0x02
-#define STATE_SUCCESS   0x03
-#define STATE_FAILURE   0x04
+#define STATE_READY     0
+#define STATE_SUCCESS   1
+#define STATE_FAILURE   2
 
 extern int global_state;
 
