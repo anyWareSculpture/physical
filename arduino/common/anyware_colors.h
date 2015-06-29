@@ -6,7 +6,9 @@
 extern const uint32_t locationColor[3];
 
 uint32_t Color(uint8_t r, uint8_t g, uint8_t b);
+void getRGB(uint32_t col, uint8_t &r, uint8_t &g, uint8_t &b);
 uint32_t scaleColor(uint32_t from, uint32_t to, uint8_t ratio);
+uint32_t applyIntensity(uint32_t col, uint8_t intensity);
 bool getColor(const char *colorstr, uint32_t &col);
 
 // Colors
