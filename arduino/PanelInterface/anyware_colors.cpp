@@ -12,22 +12,32 @@ uint32_t Color(uint8_t r, uint8_t g, uint8_t b) {
   return ((uint32_t)r << 16) | ((uint32_t)g <<  8) | b;
 }
 
-uint32_t scaleColor(uint32_t from, uint32_t to, uint8_t ratio) {
-  uint8_t a[3] = {
-    (uint8_t)(from >> 16),
-    (uint8_t)(from >>  8),
-    (uint8_t)from };
+void getRGB(uint32_t col, uint8_t &r, uint8_t &g, uint8_t &b)
+{
+  r = (uint8_t)(col >> 16);
+  g = (uint8_t)(col >>  8);
+  b = (uint8_t)col;
+}
 
-  uint8_t b[3] = {
-    (uint8_t)(to >> 16),
-    (uint8_t)(to >>  8),
-    (uint8_t)to };
+uint32_t scaleColor(uint32_t from, uint32_t to, uint8_t ratio) {
+  uint8_t a[3], b[3];
+  getRGB(from, a[0], a[1], a[2]);
+  getRGB(to, b[0], b[1], b[2]);
 
   uint32_t c = Color(uint8_t(a[0] + (b[0] - a[0]) * ratio / 255),
                      uint8_t(a[1] + (b[1] - a[1]) * ratio / 255),
                      uint8_t(a[2] + (b[2] - a[2]) * ratio / 255));
 
   return c;
+}
+
+uint32_t applyIntensity(uint32_t col, uint8_t intensity)
+{
+  uint8_t rgb[3];
+  getRGB(col, rgb[0], rgb[1], rgb[2]);
+  return Color(uint8_t(rgb[0] * intensity / 100),
+               uint8_t(rgb[1] * intensity / 100),
+               uint8_t(rgb[2] * intensity / 100));
 }
 
 bool getColor(const char *colorstr, uint32_t &col)

@@ -248,6 +248,7 @@ void do_panel_exit()
 
 void do_panel_set(uint8_t strip, uint8_t panel, uint8_t intensity, uint32_t color, AnywareEasing::EasingType  easing)
 {
+  color = applyIntensity(color, intensity);
   uint8_t id = strip * 10 + panel;
   if (easing == AnywareEasing::BINARY) {
     irpixels[id].led.setColor(color);
@@ -260,10 +261,12 @@ void do_panel_set(uint8_t strip, uint8_t panel, uint8_t intensity, uint32_t colo
 
 void do_panel_pulse(uint8_t strip, uint8_t panel, uint8_t intensity, uint32_t color, AnywareEasing::EasingType  easing)
 {
+  color = applyIntensity(color, intensity);
   uint8_t id = strip * 10 + panel;
   irpixels[id].led.ease(easing, color);
 }
 
+// FIXME: We don't currently support per-strip intensity, only global intensity
 void do_panel_intensity(uint8_t strip, uint8_t intensity)
 {
   pixels.setBrightness(255*intensity/100);
