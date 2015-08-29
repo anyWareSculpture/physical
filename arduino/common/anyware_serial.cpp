@@ -15,30 +15,6 @@ void handleSerial()
   sCmd.readSerial();
 }
 
-void printError(const char *type, const char *msg)
-{
-  Serial.print(F("ERROR "));
-  Serial.print(type);
-  Serial.print(F(": "));
-  Serial.println(msg);
-}
-
-void printError(const __FlashStringHelper *type, const __FlashStringHelper *msg)
-{
-  Serial.print(F("ERROR "));
-  Serial.print(type);
-  Serial.print(F(": "));
-  Serial.println(msg);
-}
-
-void printError(const __FlashStringHelper *type, const char *msg)
-{
-  Serial.print(F("ERROR "));
-  Serial.print(type);
-  Serial.print(F(": "));
-  Serial.println(msg);
-}
-
 int getUserIdArg(const char *arg)
 {
   if (!strcmp(arg, "0")) return 0;
