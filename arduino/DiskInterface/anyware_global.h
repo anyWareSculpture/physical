@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <avr/pgmspace.h>
+#include "anyware_error.h"
 
 extern bool global_initialized;
 extern int global_state;
