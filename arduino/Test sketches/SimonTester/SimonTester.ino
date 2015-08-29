@@ -1,107 +1,82 @@
 // Yes, this is actually -*-c++-*-
 
-#include "./Adafruit_NeoPixel.h"
-#include "./Bounce2.h"
+#include "./FastLED.h"
+#include "SharpSensor.h"
+#include "FastPixel.h"
 
 // IR sensitivity - higher is less sensitive
 #define SENSITIVITY 50
 
 // Pins
-const int IRPin1 = 4;  // IR pins
-const int IRPin2 = 5;
-const int IRPin3 = 6;
-const int IRPin4 = 7;
-const int IRPin5 = 8;
-const int IRPin6 = 9;
-const int IRPin7 = 10;
-const int IRPin8 = 11;
-const int IRPin9 = 12;
-const int IRPin10 = 13;
+const int IRPin1 = 2;  // IR pins
+const int IRPin2 = 3;
+const int IRPin3 = 4;
+const int IRPin4 = 5;
+const int IRPin5 = 6;
+const int IRPin6 = 7;
+const int IRPin7 = 8;
+const int IRPin8 = 9;
+const int IRPin9 = 14;
+const int IRPin10 = 15;
 
-// Colors
-uint32_t RED = Color(255,0,0);
-uint32_t GREEN = Color(0,255,0);
-uint32_t BLACK = Color(0,0,0);
-uint32_t PINK = Color(255,20,147);
-uint32_t MYGREEN = Color(0,201,87);
-uint32_t MYBLUE = Color(0,20,147);
-
-// Which pin on the Arduino is connected to the NeoPixels?
-#define NEOPIXEL_PIN            2
-// How many NeoPixels are attached to the Arduino?
-#define NUMPIXELS      10
-Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
+// How many panels are attached to the Arduino?
+#define NUMPANELS      10
+CRGB leds[NUMPANELS];
 
 struct IRPixel {
-  int id;
-  int sensorPin;
+  uint8_t strip;
+  uint8_t panel;
+  FastPixel led;
+  SharpSensor ir;
 
-  Bounce irState;
-  bool state;
-
-  IRPixel(int pixelid, int pin) : id(pixelid), sensorPin(pin), state(false) {}
+  IRPixel(uint8_t strip, uint8_t panel, int8_t pixelid, int8_t pin)
+    : strip(strip), panel(panel), led(pixelid), ir(pin) {}
 
   void setup() {
-    pinMode(sensorPin, INPUT_PULLUP);
-    irState.attach(sensorPin);
-    irState.interval(SENSITIVITY);
+    led.setup();
+    ir.setup();
   }
-  
-  void readSensor() {
-    if (irState.update()) state = !irState.read();
-  }
-
-  bool getState() {
-    return state;
-  }
-
-  void setColor(uint32_t col) {
-    pixels.setPixelColor(id, col);
-  }
-
 };
 
-IRPixel irpixels[NUMPIXELS] = {
-  IRPixel(0, IRPin1),
-  IRPixel(1, IRPin2),
-  IRPixel(2, IRPin3),
-  IRPixel(3, IRPin4),
-  IRPixel(4, IRPin5),
-  IRPixel(5, IRPin6),
-  IRPixel(6, IRPin7),
-  IRPixel(7, IRPin8),
-  IRPixel(8, IRPin9),
-  IRPixel(9, IRPin10)
+IRPixel irpixels[NUMPANELS] = {
+  IRPixel(0, 0, 0, IRPin1),
+  IRPixel(0, 1, 1, IRPin2),
+  IRPixel(0, 2, 2, IRPin3),
+  IRPixel(0, 3, 3, IRPin4),
+  IRPixel(0, 4, 4, IRPin5),
+  IRPixel(0, 5, 5, IRPin6),
+  IRPixel(0, 6, 6, IRPin7),
+  IRPixel(0, 7, 7, IRPin8),
+  IRPixel(0, 8, 8, IRPin9),
+  IRPixel(0, 9, 9, IRPin10)
 };
 
 void setup() {
   Serial.begin(115200);
   Serial.println("Hello SimonTester");
-  for (int i=0;i<NUMPIXELS;i++) irpixels[i].setup();
-  pixels.begin(); // This initializes the NeoPixel library.
-  pixels.show();
-  SetUpIR();
+  for (int i=0;i<NUMPANELS;i++) irpixels[i].setup();
+  //  FastLED.addLeds<APA102>(leds, NUMPANELS);
+  FastLED.addLeds<APA102, SPI_DATA, SPI_CLOCK, BGR, DATA_RATE_KHZ(100)>(leds, NUMPANELS);
 
-  colorWipe(Color(255, 0, 0), 50); // Red
-  colorWipe(Color(0, 255, 0), 50); // Green
-  colorWipe(Color(0, 0, 255), 50); // Blue
-
- }
+  colorWipe(Color(255, 0, 0), 100); // Red
+  colorWipe(Color(0, 255, 0), 100); // Green
+  colorWipe(Color(0, 0, 255), 100); // Blue
+}
 
 // Fill the dots one after the other with a color
 void colorWipe(uint32_t c, uint8_t wait) {
-  for(uint16_t i=0; i<NUMPIXELS; i++) {
-      irpixels[i].setColor(c);
-      pixels.show();
-      delay(wait);
+  for(uint8_t i=0; i<NUMPANELS; i++) {
+    irpixels[i].led.setColor(c);
+    FastLED.show();
+    delay(wait);
   }
 }
 
 void loop() { 
   int numpixels = 0;
-  for (int i=0;i<NUMPIXELS;i++) {
-    irpixels[i].readSensor();
-    if (irpixels[i].getState()) numpixels++;
+  for (int i=0;i<NUMPANELS;i++) {
+    irpixels[i].ir.readSensor();
+    if (irpixels[i].ir.getState()) numpixels++;
   }
   uint32_t col;
   switch (numpixels) {
@@ -112,29 +87,15 @@ void loop() {
     col = RED;
     break;
   case 2:
-    col = MYGREEN;
+    col = GREEN;
     break;
   case 3:
     col = MYBLUE;
     break;
   default:
-    col = PINK;
+    col = MYPINK;
     break;
   }
-  for (int i=0;i<NUMPIXELS;i++) irpixels[i].setColor(irpixels[i].getState() ? col : BLACK);
-  pixels.show();
-}
-
-void SetUpIR() {
-  // Pin3 is OC2B
-  pinMode(3, OUTPUT);  //IR LED output
-  TCCR2A = _BV(COM2B0) | _BV(WGM21);
-  TCCR2B = _BV(CS20);
-  OCR2A = 209;
-}
-
-// Convert separate R,G,B into packed 32-bit RGB color.
-// Packed format is always RGB, regardless of LED strand color order.
-uint32_t Color(uint8_t r, uint8_t g, uint8_t b) {
-  return ((uint32_t)r << 16) | ((uint32_t)g <<  8) | b;
+  for (int i=0;i<NUMPANELS;i++) irpixels[i].led.setColor(irpixels[i].ir.getState() ? col : BLACK);
+  FastLED.show();
 }
