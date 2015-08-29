@@ -13,8 +13,4 @@ void setupCommonCommands();
 void addCommand(const char *cmd, void(*function)(), const char *wildcard = NULL);
 void handleSerial();
 
-void printError(const char *type, const char *msg);
-void printError(const __FlashStringHelper *type, const __FlashStringHelper *msg);
-void printError(const __FlashStringHelper *type, const char *msg);
-
 #endif

@@ -1,13 +1,26 @@
 // Yes, this is actually -*-c++-*-
 
 /*!
-  This sketch is responsible for the Panel Interface
+  This sketch is responsible for the Panel Interface: IR sensors and RGB LEDs
 
   Example commands:
 
 IDENTITY 0
 INIT
-PANEL-SET 0 3 100 user0
+PANEL-SET 0 0 100 user0 easein
+PANEL-SET 0 1 100 user1 easein
+PANEL-SET 0 2 100 user2 easein
+PANEL-SET 0 3 100 success easein
+PANEL-SET 0 4 100 white easein
+PANEL-SET 0 5 100 user0 easein
+PANEL-SET 0 6 100 user1 easein
+PANEL-SET 0 7 100 user2 easein
+PANEL-SET 0 8 100 success easein
+PANEL-SET 0 9 100 white easein
+
+PANEL-SET 0 0 100 user0
+PANEL-SET 0 1 100 user1 easein
+PANEL-SET 0 2 100 user2 easein
 PANEL-SET 0 4 25 user0
 PANEL-SET 0 5 100 user1
 PANEL-SET 1 3 100 user2
@@ -36,77 +49,46 @@ PANEL-STATE success
 PANEL-STATE failure
 PANEL-EXIT
 
+
  */
 
-#include "./Bounce2.h"
 #include "anyware_serial.h"
 #include "anyware_colors.h"
 #include "PanelInterface.h"
-#include "NeoPixel.h"
+#include "./FastLED.h"
+#include "FastPixel.h"
+#include "SharpSensor.h"
 
 // Set to 1 to start in debug mode
-#define DEBUG_MODE 1
+#define DEBUG_MODE 0
 // Define to start in auto-init mode (sets identity to 0 and state to Ready)
 #define AUTOINIT
-
-// Pins
-const int IRPin1 = 4;  // IR pins
-const int IRPin2 = 5;
-const int IRPin3 = 6;
-const int IRPin4 = 7;
-const int IRPin5 = 8;
-const int IRPin6 = 9;
-const int IRPin7 = 10;
-const int IRPin8 = 11;
-const int IRPin9 = 12;
-const int IRPin10 = 13;
 
 // Sensitivity in millisecond. Less is more sensitive
 #define IR_SENSITIVITY 50
 
-// Which pin on the Arduino is connected to the NeoPixels?
-#define NEOPIXEL_PIN 2
-Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPANELS, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
+// Define the array of leds
+CRGB leds[NUMPANELS];
+
+// Pins
+const int IRPin1 = 2;  // IR pins
+const int IRPin2 = 3;
+const int IRPin3 = 4;
+const int IRPin4 = 5;
+const int IRPin5 = 6;
+const int IRPin6 = 7;
+const int IRPin7 = 8;
+const int IRPin8 = 9;
+const int IRPin9 = 10;
+const int IRPin10 = 12;
 
 // Configuration
-
-struct IRSensor {
-  int8_t sensorPin;
-
-  Bounce irState;
-  bool state;
-
-  IRSensor(int8_t pin)
-    : sensorPin(pin), state(false) {}
-
-  void setup() {
-    if (sensorPin >= 0) {
-      pinMode(sensorPin, INPUT_PULLUP);
-      irState.attach(sensorPin);
-      irState.interval(IR_SENSITIVITY);
-    }
-  }
-  
-  // Returns true if sensor state changed
-  bool readSensor() {
-    if (irState.update()) {
-      state = !irState.read();
-      return true;
-    }
-    return false;
-  }
-
-  bool getState() {
-    return state;
-  }
-
-};
 
 struct IRPixel {
   uint8_t strip;
   uint8_t panel;
-  NeoPixel led;
-  IRSensor ir;
+  FastPixel led;
+  SharpSensor ir;
 
   IRPixel(uint8_t strip, uint8_t panel, int8_t pixelid, int8_t pin)
     : strip(strip), panel(panel), led(pixelid), ir(pin) {}
@@ -118,22 +100,22 @@ struct IRPixel {
 };
 
 IRPixel irpixels[NUMPANELS] = {
-  IRPixel(0, 0, -1, 14),
-  IRPixel(0, 1, -1, 14),
-  IRPixel(0, 2, -1, 14),
-  IRPixel(0, 3, 0, IRPin1),
-  IRPixel(0, 4, 1, IRPin2),
-  IRPixel(0, 5, 2, IRPin3),
-  IRPixel(0, 6, -1, 14),
-  IRPixel(0, 7, -1, 14),
-  IRPixel(0, 8, -1, 14),
-  IRPixel(0, 9, -1, 14),
+  IRPixel(0, 0, 0, IRPin1),
+  IRPixel(0, 1, 1, IRPin2),
+  IRPixel(0, 2, 2, IRPin3),
+  IRPixel(0, 3, 3, IRPin4),
+  IRPixel(0, 4, 4, IRPin5),
+  IRPixel(0, 5, 5, IRPin6),
+  IRPixel(0, 6, 6, IRPin7),
+  IRPixel(0, 7, 7, IRPin8),
+  IRPixel(0, 8, 8, IRPin9),
+  IRPixel(0, 9, 9, IRPin10),
   IRPixel(1, 0, -1, 14),
   IRPixel(1, 1, -1, 14),
   IRPixel(1, 2, -1, 14),
-  IRPixel(1, 3, 3, IRPin4),
-  IRPixel(1, 4, 4, IRPin5),
-  IRPixel(1, 5, 5, IRPin6),
+  IRPixel(1, 3, -1, 14),
+  IRPixel(1, 4, -1, 14),
+  IRPixel(1, 5, -1, 14),
   IRPixel(1, 6, -1, 14),
   IRPixel(1, 7, -1, 14),
   IRPixel(1, 8, -1, 14),
@@ -141,10 +123,10 @@ IRPixel irpixels[NUMPANELS] = {
   IRPixel(2, 0, -1, 14),
   IRPixel(2, 1, -1, 14),
   IRPixel(2, 2, -1, 14),
-  IRPixel(2, 3, 6, IRPin7),
-  IRPixel(2, 4, 7, IRPin8),
-  IRPixel(2, 5, 8, IRPin9),
-  IRPixel(2, 6, 9, IRPin10),
+  IRPixel(2, 3, -1, 14),
+  IRPixel(2, 4, -1, 14),
+  IRPixel(2, 5, -1, 14),
+  IRPixel(2, 6, -1, 14),
   IRPixel(2, 7, -1, 14),
   IRPixel(2, 8, -1, 14),
   IRPixel(2, 9, -1, 14)
@@ -152,7 +134,7 @@ IRPixel irpixels[NUMPANELS] = {
 
 void setAllColors(uint32_t col) {
   for (int i = 0; i < NUMPANELS; i++) irpixels[i].led.setColor(col);
-  pixels.show(); // This sends the updated pixel color to the hardware. 
+  FastLED.show(); // This sends the updated pixel color to the hardware. 
 }
 
 void setup() {
@@ -169,9 +151,8 @@ void resetColors()
 
 void resetInterface(bool debug)
 {
-  setupIR();
   for (int i=0;i<NUMPANELS;i++) irpixels[i].setup();
-  pixels.begin(); // This initializes the NeoPixel library.
+  FastLED.addLeds<APA102>(leds, NUMPANELS);
   resetColors();
 
   global_initialized = false;
@@ -223,25 +204,6 @@ void right() {
   resetColors();
 }
 
-// Returns the index of the first active sensor or -1 if no sensors are active
-int getCurrentSensor() {
-  for (int i=0;i<NUMPANELS;i++) {
-    if (irpixels[i].ir.getState()) return i;
-  }
-  return -1; 
-}
-
-// Returns false if more than one sensor is active
-uint8_t numSensorsActive() {
-  int count = 0;
-  for (int i=0;i<NUMPANELS;i++) {
-    if (irpixels[i].ir.getState()) {
-      count++;
-    }
-  }
-  return count;
-}
-
 // FIXME: We don't currently support duration
 void do_panel_set(uint8_t strip, uint8_t panel, uint8_t intensity, uint32_t color, AnywareEasing::EasingType  easing)
 {
@@ -249,7 +211,7 @@ void do_panel_set(uint8_t strip, uint8_t panel, uint8_t intensity, uint32_t colo
   uint8_t id = strip * 10 + panel;
   if (easing == AnywareEasing::BINARY) {
     irpixels[id].led.setColor(color);
-    pixels.show();
+    FastLED.show();
   }
   else {
     irpixels[id].led.ease(easing, color);
@@ -267,8 +229,8 @@ void do_panel_pulse(uint8_t strip, uint8_t panel, uint8_t intensity, uint32_t co
 // FIXME: We don't currently support per-strip intensity, only global intensity
 void do_panel_intensity(uint8_t strip, uint8_t intensity)
 {
-  pixels.setBrightness(255*intensity/100);
-  pixels.show();
+  FastLED.setBrightness(255*intensity/100);
+  FastLED.show();
 }
 
 void do_panel_state(int state)
@@ -290,7 +252,7 @@ void handleAnimations()
   }
   if (changed) {
     //    Serial.println("show");
-    pixels.show();
+    FastLED.show();
   }
 
 }
@@ -300,7 +262,7 @@ void loop()
   handleSerial();
 
   if (!global_initialized) return;
-
+  
   handleAnimations();
 
   if (global_state == STATE_READY) {
