@@ -19,6 +19,10 @@ const int IRPin8 = 9;
 const int IRPin9 = 14;
 const int IRPin10 = 15;
 
+// These are hardwired pins for the LED strip (SPI):
+// CLOCK PIN = 11
+// DATA PIN = 13
+
 // How many panels are attached to the Arduino?
 #define NUMPANELS      10
 CRGB leds[NUMPANELS];
