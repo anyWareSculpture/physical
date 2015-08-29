@@ -3,24 +3,28 @@
 
 #include "Arduino.h"
 #include "AnywareEasing.h"
-#include "./Adafruit_NeoPixel.h"
+#include "./FastLED.h"
 
-extern Adafruit_NeoPixel pixels;
+extern CRGB leds[];
 
-class NeoPixel {
+class FastPixel {
 public:
-  NeoPixel(int8_t pixelid)
+  FastPixel(int8_t pixelid)
     : pixel(pixelid), easingid(-1) {}
 
   void setup() {
   }
   
   void setColor(uint32_t col) {
-    if (pixel >= 0) pixels.setPixelColor(pixel, col);
+    if (pixel >= 0) leds[pixel] = CRGB(col);
+  }
+
+  uint32_t colorCode(const CRGB &crgb) {
+    return Color(crgb.r, crgb.g, crgb.b);
   }
 
   uint32_t getColor() {
-    return pixel >= 0 ? pixels.getPixelColor(pixel) : 0;
+    return pixel >= 0 ? colorCode(leds[pixel]) : 0;
   }
 
   void ease(AnywareEasing::EasingType type, uint32_t toColor);
