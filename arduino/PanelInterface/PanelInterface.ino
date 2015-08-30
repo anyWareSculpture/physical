@@ -79,8 +79,8 @@ const int IRPin5 = 6;
 const int IRPin6 = 7;
 const int IRPin7 = 8;
 const int IRPin8 = 9;
-const int IRPin9 = 10;
-const int IRPin10 = 12;
+const int IRPin9 = 14;
+const int IRPin10 = 15;
 
 // Configuration
 
