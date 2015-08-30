@@ -1,6 +1,11 @@
 #ifndef SHARPSENSOR_H_
 #define SHARPSENSOR_H_
 
+#include "./Bounce2.h"
+
+// Sensitivity in millisecond. Less is more sensitive
+#define IR_SENSITIVITY 10
+
 class SharpSensor {
 public:
   SharpSensor(int8_t pin)
@@ -9,15 +14,18 @@ public:
   void setup() {
     if (sensorPin >= 0) {
       pinMode(sensorPin, INPUT_PULLUP);
+      irState.attach(sensorPin);
+      irState.interval(IR_SENSITIVITY);
     }
   }
   
   // Returns true if sensor state changed
   bool readSensor() {
-    bool newstate = !digitalRead(sensorPin);
-    bool changed = (newstate != this->state);
-    this->state = newstate;
-    return changed;
+    if (irState.update()) {
+      this->state = !irState.read();
+      return true;
+    }
+    return false;
   }
 
   bool getState() {
@@ -26,7 +34,7 @@ public:
 
 protected:
   int8_t sensorPin;
-
+  Bounce irState;
   bool state;
 };
 
