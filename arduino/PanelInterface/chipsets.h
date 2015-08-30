@@ -135,7 +135,7 @@ class APA102Controller : public CLEDController {
 	SPI mSPI;
 
 	void startBoundary() { mSPI.writeWord(0); mSPI.writeWord(0); }
-	void endBoundary() { /*mSPI.writeWord(0xFFFF); mSPI.writeWord(0xFFFF); */}
+	void endBoundary() { mSPI.writeWord(0xFFFF); mSPI.writeWord(0xFFFF); }
 
 	inline void writeLed(uint8_t b0, uint8_t b1, uint8_t b2) __attribute__((always_inline)) {
 		mSPI.writeByte(0xFF); mSPI.writeByte(b0); mSPI.writeByte(b1); mSPI.writeByte(b2);
