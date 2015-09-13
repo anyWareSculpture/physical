@@ -1,6 +1,7 @@
 #include "PanelInterface.h"
 #include "anyware_serial.h"
 #include "anyware_colors.h"
+#include "configuration.h"
 
 extern SerialCommand sCmd;
 
@@ -15,7 +16,7 @@ void panel_set_action()
     return;
   }
   uint8_t strip = atoi(striparg);
-  if (strip > 2) {
+  if (strip >= MAX_STRIPS) {
     printError(F("protocol error"), F("Illegal strip argument"));
     return;
   }
@@ -43,7 +44,7 @@ void panel_set_action()
   }
 
   char *colorarg = sCmd.next();
-  uint32_t color;
+  CRGB color;
   if (colorarg && strcmp(colorarg, "-")) {
     if (!getColor(colorarg, color)) {
       printError(F("protocol error"), F("Illegal color argument"));
@@ -87,7 +88,7 @@ void panel_pulse_action()
     return;
   }
   uint8_t strip = atoi(striparg);
-  if (strip > 2) {
+  if (strip >= MAX_STRIPS) {
     printError(F("protocol error"), F("Illegal strip argument"));
     return;
   }
@@ -115,7 +116,7 @@ void panel_pulse_action()
   }
 
   char *colorarg = sCmd.next();
-  uint32_t color;
+  CRGB color;
   if (colorarg && strcmp(colorarg, "-")) {
     if (!getColor(colorarg, color)) {
       printError(F("protocol error"), F("Illegal color argument"));
@@ -160,7 +161,7 @@ void panel_intensity_action()
     return;
   }
   uint8_t strip = atoi(striparg);
-  if (strip > 2) {
+  if (strip = MAX_STRIPS) {
     printError(F("protocol error"), F("Illegal strip argument"));
     return;
   }
@@ -218,9 +219,9 @@ void setupCommands()
   setupCommonCommands();
 
   Serial.println(F("SUPPORTED"));
-  addCommand("PANEL-SET", panel_set_action, " [012]");
-  addCommand("PANEL-PULSE", panel_pulse_action, " [012]");
-  addCommand("PANEL-INTENSITY", panel_intensity_action, " [012]");
+  addCommand("PANEL-SET", panel_set_action, STRIPREGEXP);
+  addCommand("PANEL-PULSE", panel_pulse_action, STRIPREGEXP);
+  addCommand("PANEL-INTENSITY", panel_intensity_action, STRIPREGEXP);
   addCommand("PANEL-ANIMATE", panel_animate_action);
   addCommand("PANEL-STATE", panel_state_action);
   Serial.println(F("ENDSUPPORTED"));

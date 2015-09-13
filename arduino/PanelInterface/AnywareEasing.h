@@ -3,6 +3,7 @@
 
 #include "./Easing.h"
 #include "anyware_colors.h"
+#include "colorutils.h"
 
 struct AnywareEasing {
   enum EasingType {
@@ -32,20 +33,20 @@ struct AnywareEasing {
 };
 
 struct ColorEasing : public AnywareEasing {
-  uint32_t fromColor;
-  uint32_t toColor;
+  CRGB fromColor;
+  CRGB toColor;
   
   ColorEasing() : AnywareEasing() {  }
 
-  void start(uint8_t type, uint32_t fromColor, uint32_t toColor) {
+  void start(uint8_t type, const CRGB &fromColor, const CRGB &toColor) {
     AnywareEasing::start(type);
     this->fromColor = fromColor;
     this->toColor = toColor;
   }
 
-  uint32_t applyColor(uint32_t t) {
+  CRGB applyColor(uint32_t t) {
     uint8_t val = apply(t);
-    return scaleColor(fromColor, toColor, val);
+    return blend(fromColor, toColor, val);
   }
 };
 

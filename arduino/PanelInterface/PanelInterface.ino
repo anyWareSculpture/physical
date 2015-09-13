@@ -7,9 +7,9 @@
 
 IDENTITY 0
 INIT
-PANEL-SET 0 0 100 user0 easein
-PANEL-SET 0 1 100 user1 easein
-PANEL-SET 0 2 100 user2 easein
+PANEL-SET 1 0 100 user0 easein
+PANEL-SET 1 1 100 user1 easein
+PANEL-SET 3 2 100 user2 easein
 PANEL-SET 0 3 100 success easein
 PANEL-SET 0 4 100 white easein
 PANEL-SET 0 5 100 user0 easein
@@ -56,8 +56,10 @@ PANEL-EXIT
 #include "anyware_colors.h"
 #include "PanelInterface.h"
 #include "./FastLED.h"
-#include "FastPixel.h"
-#include "SharpSensor.h"
+#include "Sensor.h"
+#include "Pixel.h"
+#include "DiscreteSensors.h"
+#include "LEDStrip.h"
 
 // Set to 1 to start in debug mode
 #define DEBUG_MODE 0
@@ -67,75 +69,10 @@ PANEL-EXIT
 // Sensitivity in millisecond. Less is more sensitive
 #define IR_SENSITIVITY 50
 
-// Define the array of leds
-CRGB leds[NUMPANELS];
-
-// Pins
-const int IRPin1 = 2;  // IR pins
-const int IRPin2 = 3;
-const int IRPin3 = 4;
-const int IRPin4 = 5;
-const int IRPin5 = 6;
-const int IRPin6 = 7;
-const int IRPin7 = 8;
-const int IRPin8 = 9;
-const int IRPin9 = 14;
-const int IRPin10 = 15;
-
 // Configuration
 
-struct IRPixel {
-  uint8_t strip;
-  uint8_t panel;
-  FastPixel led;
-  SharpSensor ir;
-
-  IRPixel(uint8_t strip, uint8_t panel, int8_t pixelid, int8_t pin)
-    : strip(strip), panel(panel), led(pixelid), ir(pin) {}
-
-  void setup() {
-    led.setup();
-    ir.setup();
-  }
-};
-
-IRPixel irpixels[NUMPANELS] = {
-  IRPixel(0, 0, 0, IRPin1),
-  IRPixel(0, 1, 1, IRPin2),
-  IRPixel(0, 2, 2, IRPin3),
-  IRPixel(0, 3, 3, IRPin4),
-  IRPixel(0, 4, 4, IRPin5),
-  IRPixel(0, 5, 5, IRPin6),
-  IRPixel(0, 6, 6, IRPin7),
-  IRPixel(0, 7, 7, IRPin8),
-  IRPixel(0, 8, 8, IRPin9),
-  IRPixel(0, 9, 9, IRPin10),
-  IRPixel(1, 0, -1, 14),
-  IRPixel(1, 1, -1, 14),
-  IRPixel(1, 2, -1, 14),
-  IRPixel(1, 3, -1, 14),
-  IRPixel(1, 4, -1, 14),
-  IRPixel(1, 5, -1, 14),
-  IRPixel(1, 6, -1, 14),
-  IRPixel(1, 7, -1, 14),
-  IRPixel(1, 8, -1, 14),
-  IRPixel(1, 9, -1, 14),
-  IRPixel(2, 0, -1, 14),
-  IRPixel(2, 1, -1, 14),
-  IRPixel(2, 2, -1, 14),
-  IRPixel(2, 3, -1, 14),
-  IRPixel(2, 4, -1, 14),
-  IRPixel(2, 5, -1, 14),
-  IRPixel(2, 6, -1, 14),
-  IRPixel(2, 7, -1, 14),
-  IRPixel(2, 8, -1, 14),
-  IRPixel(2, 9, -1, 14)
-};
-
-void setAllColors(uint32_t col) {
-  for (int i = 0; i < NUMPANELS; i++) irpixels[i].led.setColor(col);
-  FastLED.show(); // This sends the updated pixel color to the hardware. 
-}
+#define ANYWARE_MAIN
+#include "configuration.h"
 
 void setup() {
   Serial.begin(115200);
@@ -146,13 +83,13 @@ void setup() {
 
 void resetColors()
 {
-  setAllColors(BLACK);
+  LEDStripInterface::setAllColors(BLACK);
 }
 
 void resetInterface(bool debug)
 {
-  for (int i=0;i<NUMPANELS;i++) irpixels[i].setup();
-  FastLED.addLeds<APA102>(leds, NUMPANELS);
+  for (int i=0;i<LEDStripInterface::getNumStrips();i++) LEDStripInterface::getStrip(i).setup();
+  sensors.setup();
   resetColors();
 
   global_initialized = false;
@@ -173,57 +110,69 @@ void resetInterface(bool debug)
 void initInterface() {
 }
 
-void HandleSensors() {
-  bool first = true;
-  for (int i=0;i<NUMPANELS;i++) {
-    if (irpixels[i].ir.readSensor()) {
+void handleSensors() {
+  for (int i=0;i<sensors.getNumSensors();i++) {
+    const Sensor &s = sensors.getSensor(i);
+    if (sensors.readSensor(i)) {
       Serial.print(F("PANEL "));
-      Serial.print(irpixels[i].strip);
+      Serial.print(s.strip);
       Serial.print(" ");
-      Serial.print(irpixels[i].panel);
+      Serial.print(s.panel);
       Serial.print(" ");
-      Serial.println(irpixels[i].ir.getState() ? 1 : 0);
+      Serial.println(sensors.getState(i) ? 1 : 0);
     }
   }
 }
 
 void wrong() {
-  setAllColors(RED);
+  LEDStripInterface::setAllColors(RED);
   delay(1000);
-  setAllColors(BLACK);
+  LEDStripInterface::setAllColors(BLACK);
   resetColors();
 }
 
 void right() {
   for (int loopSuccess = 0; loopSuccess < 5; loopSuccess++) {
-    setAllColors(GREEN);
+    LEDStripInterface::setAllColors(GREEN);
     delay(200);
-    setAllColors(BLACK);
+    LEDStripInterface::setAllColors(BLACK);
     delay(200);     
   }
   resetColors();
 }
 
 // FIXME: We don't currently support duration
-void do_panel_set(uint8_t strip, uint8_t panel, uint8_t intensity, uint32_t color, AnywareEasing::EasingType  easing)
+void do_panel_set(uint8_t strip, uint8_t panel, uint8_t intensity, const CRGB &color, AnywareEasing::EasingType  easing)
 {
-  color = applyIntensity(color, intensity);
-  uint8_t id = strip * 10 + panel;
+  CRGB newcol = applyIntensity(color, intensity);
+  Serial.print(strip);Serial.print(" ");Serial.println(panel);
+  const Pair &p = LEDStripInterface::mapToLED(strip, panel);
+  if (p.stripid < 0 || p.pixelid < 0) {
+    printError(F("client error"), F("Strip or panel out of range"));
+    Serial.print(p.stripid);Serial.print(" ");Serial.println(p.pixelid);
+    return;
+  }
+  LEDStripInterface &s = LEDStripInterface::getStrip(p.stripid);
   if (easing == AnywareEasing::BINARY) {
-    irpixels[id].led.setColor(color);
+    s.setColor(p.pixelid, newcol);
     FastLED.show();
   }
   else {
-    irpixels[id].led.ease(easing, color);
+    s.ease(p.pixelid, easing, newcol);
   }
 }
 
 // FIXME: We don't currently support duration
-void do_panel_pulse(uint8_t strip, uint8_t panel, uint8_t intensity, uint32_t color, AnywareEasing::EasingType  easing)
+void do_panel_pulse(uint8_t strip, uint8_t panel, uint8_t intensity, const CRGB &color, AnywareEasing::EasingType  easing)
 {
-  color = applyIntensity(color, intensity);
-  uint8_t id = strip * 10 + panel;
-  irpixels[id].led.ease(easing, color);
+  CRGB newcol = applyIntensity(color, intensity);
+  const Pair &p = LEDStripInterface::mapToLED(strip, panel);
+  if (p.stripid < 0 || p.pixelid < 0) {
+    printError(F("client error"), F("Strip or panel out of range"));
+    return;
+  }
+  LEDStripInterface &s = LEDStripInterface::getStrip(p.stripid);
+  s.ease(p.pixelid, easing, newcol);
 }
 
 // FIXME: We don't currently support per-strip intensity, only global intensity
@@ -243,18 +192,10 @@ void handleAnimations()
 {
   uint32_t currtime = millis();
 
-  bool changed = false;
   if (currtime - animPrevTickTime >= 1) { // tick
     animPrevTickTime = currtime;
-    for (uint8_t i=0;i<NUMPANELS;i++) {
-      changed |= irpixels[i].led.applyEasing();
-    }
+    LEDStripInterface::applyEasings();
   }
-  if (changed) {
-    //    Serial.println("show");
-    FastLED.show();
-  }
-
 }
 
 void loop()
@@ -266,7 +207,7 @@ void loop()
   handleAnimations();
 
   if (global_state == STATE_READY) {
-    HandleSensors();
+    handleSensors();
   }
   else if (global_state == STATE_SUCCESS) {
     right();

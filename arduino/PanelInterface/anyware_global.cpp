@@ -6,6 +6,7 @@ int global_state;
 int global_userid = -1;
 bool global_debug = false;
 
+#if 0 // Not used any longer
 void setupIR () {
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
   // Arduino MEGA: Pin9 is OC2B
@@ -18,3 +19,4 @@ void setupIR () {
   TCCR2B = _BV(CS20);
   OCR2A = 209;
 }
+#endif
