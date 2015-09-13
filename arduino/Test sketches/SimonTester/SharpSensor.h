@@ -18,6 +18,8 @@ public:
       irState.interval(IR_SENSITIVITY);
     }
   }
+
+  bool hasSensor() { return sensorPin >= 0; }
   
   // Returns true if sensor state changed
   bool readSensor() {

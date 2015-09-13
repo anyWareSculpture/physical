@@ -1,8 +1,10 @@
 // Yes, this is actually -*-c++-*-
 
 #include "./FastLED.h"
-#include "SharpSensor.h"
-#include "FastPixel.h"
+#include "Sensor.h"
+#include "Pixel.h"
+#include "DiscreteSensors.h"
+#include "LEDStrip.h"
 
 // IR sensitivity - higher is less sensitive
 #define SENSITIVITY 50
@@ -20,69 +22,73 @@ const int IRPin9 = 14;
 const int IRPin10 = 15;
 
 // These are hardwired pins for the LED strip (SPI):
-// CLOCK PIN = 11
-// DATA PIN = 13
+// DATA PIN = 11
+// CLOCK PIN = 13
 
-// How many panels are attached to the Arduino?
-#define NUMPANELS      10
-CRGB leds[NUMPANELS];
-
-struct IRPixel {
-  uint8_t strip;
-  uint8_t panel;
-  FastPixel led;
-  SharpSensor ir;
-
-  IRPixel(uint8_t strip, uint8_t panel, int8_t pixelid, int8_t pin)
-    : strip(strip), panel(panel), led(pixelid), ir(pin) {}
-
-  void setup() {
-    led.setup();
-    ir.setup();
-  }
+#define STRIP_LEDS 10
+CRGB leds[STRIP_LEDS];
+Pixel pixels[STRIP_LEDS] = {
+  Pixel(0, 0),
+  Pixel(0, 1),
+  Pixel(0, 2),
+  Pixel(0, 3),
+  Pixel(0, 4),
+  Pixel(0, 5),
+  Pixel(0, 6),
+  Pixel(0, 7),
+  Pixel(0, 8),
+  Pixel(0, 9)
 };
+LEDStrip<SPI_DATA, SPI_CLOCK> strip(STRIP_LEDS, leds, pixels);
 
-IRPixel irpixels[NUMPANELS] = {
-  IRPixel(0, 0, 0, IRPin1),
-  IRPixel(0, 1, 1, IRPin2),
-  IRPixel(0, 2, 2, IRPin3),
-  IRPixel(0, 3, 3, IRPin4),
-  IRPixel(0, 4, 4, IRPin5),
-  IRPixel(0, 5, 5, IRPin6),
-  IRPixel(0, 6, 6, IRPin7),
-  IRPixel(0, 7, 7, IRPin8),
-  IRPixel(0, 8, 8, IRPin9),
-  IRPixel(0, 9, 9, IRPin10)
+#define STRIP_SENSORS 10
+Sensor strip_sensors[STRIP_SENSORS] = {
+  Sensor(0, 0, IRPin1),
+  Sensor(0, 1, IRPin2),
+  Sensor(0, 2, IRPin3),
+  Sensor(0, 3, IRPin4),
+  Sensor(0, 4, IRPin5),
+  Sensor(0, 5, IRPin6),
+  Sensor(0, 6, IRPin7),
+  Sensor(0, 7, IRPin8),
+  Sensor(0, 8, IRPin9),
+  Sensor(0, 9, IRPin10)
 };
+DiscreteSensors sensors(STRIP_SENSORS, strip_sensors);
 
 void setup() {
   Serial.begin(115200);
   Serial.println("Hello SimonTester");
-  for (int i=0;i<NUMPANELS;i++) irpixels[i].setup();
-  //  FastLED.addLeds<APA102>(leds, NUMPANELS);
-  FastLED.addLeds<APA102, SPI_DATA, SPI_CLOCK, BGR, DATA_RATE_KHZ(100)>(leds, NUMPANELS);
+  for (int i=0;i<LEDStripInterface::getNumStrips();i++) LEDStripInterface::getStrip(i).setup();
+  sensors.setup();
 
-  colorWipe(Color(255, 0, 0), 100); // Red
-  colorWipe(Color(0, 255, 0), 100); // Green
-  colorWipe(Color(0, 0, 255), 100); // Blue
+  colorWipe(CRGB(255, 0, 0), 100); // Red
+  colorWipe(CRGB(0, 255, 0), 100); // Green
+  colorWipe(CRGB(0, 0, 255), 100); // Blue
+  colorWipe(CRGB(0, 0, 0), 100); // BLACK
 }
 
 // Fill the dots one after the other with a color
-void colorWipe(uint32_t c, uint8_t wait) {
-  for(uint8_t i=0; i<NUMPANELS; i++) {
-    irpixels[i].led.setColor(c);
-    FastLED.show();
-    delay(wait);
+void colorWipe(const CRGB &c, uint8_t wait) {
+  for (int i=0;i<LEDStripInterface::getNumStrips();i++) {
+    LEDStripInterface &s = LEDStripInterface::getStrip(i);
+    for(uint8_t i=0; i<s.getNumPixels(); i++) {
+      s.setColor(i, c);
+      FastLED.show();
+      delay(wait);
+    }
   }
 }
 
 void loop() { 
   int numpixels = 0;
-  for (int i=0;i<NUMPANELS;i++) {
-    irpixels[i].ir.readSensor();
-    if (irpixels[i].ir.getState()) numpixels++;
+  for (int i=0;i<sensors.getNumSensors();i++) {
+    Sensor &s = sensors.getSensor(i);
+    s.readSensor();
+    if (s.getState()) numpixels++;
   }
-  uint32_t col;
+  Serial.println(numpixels);
+  CRGB col;
   switch (numpixels) {
   case 0:
     col = BLACK;
@@ -100,6 +106,7 @@ void loop() {
     col = MYPINK;
     break;
   }
-  for (int i=0;i<NUMPANELS;i++) irpixels[i].led.setColor(irpixels[i].ir.getState() ? col : BLACK);
+  LEDStripInterface &s = LEDStripInterface::getStrip(0);
+  for (int i=0;i<s.getNumPixels();i++) s.setColor(i, sensors.getSensor(i).getState() ? col : BLACK);
   FastLED.show();
 }

@@ -1,16 +1,16 @@
-#include "FastPixel.h"
+#include "Pixel.h"
 #include "anyware_global.h"
 
 // We don't have enough memory to have one easing per pixel, so we have to reuse from a pool of easings
 #define NUM_EASINGS 5
 static ColorEasing easings[NUM_EASINGS];
 
-void FastPixel::ease(AnywareEasing::EasingType type, uint32_t toColor)
+void Pixel::ease(AnywareEasing::EasingType type, const CRGB &toColor, CRGB &buf)
 {
   // If we're already easing, end the easing and start another one
   if (easingid >= 0) {
     uint32_t val = easings[easingid].end();
-    leds[pixel] = val;
+    buf = val;
     easingid = -1;
   }
 
@@ -22,25 +22,25 @@ void FastPixel::ease(AnywareEasing::EasingType type, uint32_t toColor)
     }
   }
   if (easingid >= 0) {
-    easings[easingid].start(type, getColor(), toColor);
+    easings[easingid].start(type, buf, toColor);
     if (global_debug) {
       Serial.print("DEBUG Found easing: "); Serial.println(easingid);
     }
   }
   else {
     printError(F("internal error"), F("No easings available"));
-    leds[pixel] = toColor;
+    buf = toColor;
   }
 }
 
-bool FastPixel::applyEasing()
+bool Pixel::applyEasing(CRGB &buf)
 {
   bool retval = false;
   if (easingid >=0 && easings[easingid].active) {
     uint8_t oldval = easings[easingid].currval;
-    uint32_t col = easings[easingid].applyColor(millis());
+    CRGB col = easings[easingid].applyColor(millis());
     if (oldval != easings[easingid].currval) {
-      leds[pixel] = col;
+      buf = col;
       retval = true;
     }
     if (!easings[easingid].active) easingid = -1;
