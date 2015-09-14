@@ -1,5 +1,5 @@
 
-#define STRIPREGEXP "[13]"
+#define STRIPREGEXP " [13]"
 
 #ifdef ANYWARE_MAIN
 
