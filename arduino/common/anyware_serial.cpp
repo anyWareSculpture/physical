@@ -5,6 +5,10 @@ SerialCommand sCmd;
 void addCommand(const char *cmd, void(*function)(), const char *wildcard)
 {
   sCmd.addCommand(cmd, function);
+}
+
+void printCommand(const char *cmd, const char *wildcard)
+{
   Serial.print(cmd);
   if (wildcard) Serial.print(wildcard);
   Serial.println();
