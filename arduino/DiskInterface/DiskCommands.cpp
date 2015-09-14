@@ -260,13 +260,20 @@ void panel_intensity_action()
 void setupCommands()
 { 
   setupCommonCommands();
-
-  Serial.println(F("SUPPORTED"));
   addCommand("DISK-RESET", disk_reset_action);
   addCommand("DISK", disk_action);
+  addCommand("PANEL-SET", panel_set_action);
+  addCommand("PANEL-PULSE", panel_pulse_action);
+  addCommand("PANEL-INTENSITY", panel_intensity_action);
+}
 
-  addCommand("PANEL-SET", panel_set_action, " [34]");
-  addCommand("PANEL-PULSE", panel_pulse_action, " [34]");
-  addCommand("PANEL-INTENSITY", panel_intensity_action, " [34]");
+void printCommands()
+{ 
+  Serial.println(F("SUPPORTED"));
+  printCommand("DISK-RESET");
+  printCommand("DISK");
+  printCommand("PANEL-SET", " [34]");
+  printCommand("PANEL-PULSE", " [34]");
+  printCommand("PANEL-INTENSITY", " [34]");
   Serial.println(F("ENDSUPPORTED"));
 }

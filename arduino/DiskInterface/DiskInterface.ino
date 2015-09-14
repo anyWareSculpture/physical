@@ -386,7 +386,6 @@ void setup()
   setupCommands();
 
   //  attachInterrupt(DISK0_ENC_A, disk0a_isr, CHANGE);
-
 }
 
 // Reset everything to initial state
@@ -409,6 +408,7 @@ void resetInterface(bool debug)
   Serial.println();
   Serial.println("HELLO disk");
   if (global_debug) Serial.println("DEBUG disk");
+  printCommands();
 }
 
 void initInterface() {

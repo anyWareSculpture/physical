@@ -218,11 +218,20 @@ void setupCommands()
 { 
   setupCommonCommands();
 
-  Serial.println(F("SUPPORTED"));
-  addCommand("PANEL-SET", panel_set_action, STRIPREGEXP);
-  addCommand("PANEL-PULSE", panel_pulse_action, STRIPREGEXP);
-  addCommand("PANEL-INTENSITY", panel_intensity_action, STRIPREGEXP);
+  addCommand("PANEL-SET", panel_set_action);
+  addCommand("PANEL-PULSE", panel_pulse_action);
+  addCommand("PANEL-INTENSITY", panel_intensity_action);
   addCommand("PANEL-ANIMATE", panel_animate_action);
   addCommand("PANEL-STATE", panel_state_action);
+}
+
+void printCommands()
+{ 
+  Serial.println(F("SUPPORTED"));
+  printCommand("PANEL-SET", STRIPREGEXP);
+  printCommand("PANEL-PULSE", STRIPREGEXP);
+  printCommand("PANEL-INTENSITY", STRIPREGEXP);
+  printCommand("PANEL-ANIMATE");
+  printCommand("PANEL-STATE");
   Serial.println(F("ENDSUPPORTED"));
 }
