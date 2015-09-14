@@ -1,7 +1,7 @@
 #ifndef HANDSHAKEINTERFACE_H_
 #define HANDSHAKEINTERFACE_H_
 
-#include "anyware_global.h"
+#include "AnywareEasing.h"
 
 // State flags
 #define STATE_IDLE      0x00
@@ -9,6 +9,8 @@
 
 extern int global_state;
 
-void do_handshake(bool active, uint8_t user);
+void do_panel_set(uint8_t strip, uint8_t panel, uint8_t intensity, const CRGB &color, AnywareEasing::EasingType  easing);
+void do_panel_pulse(uint8_t strip, uint8_t panel, uint8_t intensity, const CRGB &color, AnywareEasing::EasingType  easing);
+void do_panel_intensity(uint8_t strip, uint8_t intensity);
 
 #endif

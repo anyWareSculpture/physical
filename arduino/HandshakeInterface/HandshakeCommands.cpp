@@ -1,41 +1,195 @@
-#include "SerialCommand.h"
 #include "HandshakeInterface.h"
-
-extern SerialCommand sCmd;
+#include "anyware_serial.h"
 
 /*!
-  HANDSHAKE <bool> <userid>
+  PANEL-SET <strip> <panel> <intensity> <color> <easing>
+
+  Only listens for strip 5
 */
-void handshake_action()
+void panel_set_action()
 {
-  char *activearg = sCmd.next();
-
-  if (!activearg) {
-    printError("protocol error", "wrong # of parameters to HANDSHAKE");
+  char *striparg = sCmd.next();
+  if (!striparg) {
+    printError(F("protocol error"), F("wrong # of parameters to PANEL-SET"));
     return;
   }
-  bool active = atoi(activearg);
-
-  char *userarg = sCmd.next();
-  if (!userarg) {
-    printError("protocol error", "wrong # of parameters to HANDSHAKE");
+  uint8_t strip = atoi(striparg);
+  if (strip != 5) {
+    printError(F("protocol error"), F("Illegal strip argument"));
     return;
   }
-  int user = getUserIdArg(userarg);
-  
+
+  char *panelarg = sCmd.next();
+  if (!panelarg) {
+    printError(F("protocol error"), F("wrong # of parameters to PANEL-SET"));
+    return;
+  }
+  uint8_t panel = atoi(panelarg);
+  if (panel >= 3) {
+    printError(F("protocol error"), F("Illegal panel argument"));
+    return;
+  }
+
+  char *intensityarg = sCmd.next();
+  if (!intensityarg) {
+    printError(F("protocol error"), F("wrong # of parameters to PANEL-SET"));
+    return;
+  }
+  uint8_t intensity = atoi(intensityarg);
+  if (intensity > 100) {
+    printError(F("protocol error"), F("Illegal intensity argument"));
+    return;
+  }
+
+  char *colorarg = sCmd.next();
+  CRGB color;
+  if (colorarg && strcmp(colorarg, "-")) {
+    if (!getColor(colorarg, color)) {
+      printError(F("protocol error"), F("Illegal color argument"));
+      return;
+    }
+  }
+
+  char *easingarg = sCmd.next();
+  AnywareEasing::EasingType easing = AnywareEasing::BINARY;
+  if (easingarg && strcmp(easingarg, "-")) {
+    if (!AnywareEasing::getEasing(easingarg, easing)) {
+      printError(F("protocol error"), F("Illegal easing argument"));
+      return;
+    }
+  }
+
   if (global_debug) {
-    Serial.print("DEBUG HANDSHAKE ");
-    Serial.print(active);
+    Serial.print(F("DEBUG PANEL-SET received: "));
+    Serial.print(strip);
     Serial.print(" ");
-    Serial.print(user);
-    Serial.println(" received");
+    Serial.print(panel);
+    Serial.print(" ");
+    Serial.print(intensity);
+    Serial.print(" ");
+    Serial.print(color, HEX);
+    Serial.print(" ");
+    Serial.print(easing);
+    Serial.println();
   }
-  do_handshake(active, user);
+  do_panel_set(strip, panel, intensity, color, easing);
+}
+
+/*!
+  PANEL-SENSORS <userid> <sensors>
+*/
+void panel_pulse_action()
+{
+  char *striparg = sCmd.next();
+  if (!striparg) {
+    printError(F("protocol error"), F("wrong # of parameters to PANEL-PULSE"));
+    return;
+  }
+  uint8_t strip = atoi(striparg);
+  if (strip != 5) {
+    printError(F("protocol error"), F("Illegal strip argument"));
+    return;
+  }
+
+  char *panelarg = sCmd.next();
+  if (!panelarg) {
+    printError(F("protocol error"), F("wrong # of parameters to PANEL-PULSE"));
+    return;
+  }
+  uint8_t panel = atoi(panelarg);
+  if (panel >= 3) {
+    printError(F("protocol error"), F("Illegal panel argument"));
+    return;
+  }
+
+  char *intensityarg = sCmd.next();
+  if (!intensityarg) {
+    printError(F("protocol error"), F("wrong # of parameters to PANEL-PULSE"));
+    return;
+  }
+  uint8_t intensity = atoi(intensityarg);
+  if (intensity > 100) {
+    printError(F("protocol error"), F("Illegal intensity argument"));
+    return;
+  }
+
+  char *colorarg = sCmd.next();
+  CRGB color;
+  if (colorarg && strcmp(colorarg, "-")) {
+    if (!getColor(colorarg, color)) {
+      printError(F("protocol error"), F("Illegal color argument"));
+      return;
+    }
+  }
+
+  char *easingarg = sCmd.next();
+  AnywareEasing::EasingType easing = AnywareEasing::BINARY;
+  if (easingarg && strcmp(easingarg, "-")) {
+    if (!AnywareEasing::getEasing(easingarg, easing)) {
+      printError(F("protocol error"), F("Illegal easing argument"));
+      return;
+    }
+  }
+
+  if (global_debug) {
+    Serial.print(F("DEBUG PANEL-PULSE received: "));
+    Serial.print(strip);
+    Serial.print(" ");
+    Serial.print(panel);
+    Serial.print(" ");
+    Serial.print(intensity);
+    Serial.print(" ");
+    Serial.print(color, HEX);
+    Serial.print(" ");
+    Serial.print(easing);
+    Serial.println();
+  }
+  do_panel_pulse(strip, panel, intensity, color, easing);
+}
+
+/*!
+  PANEL-INTENSITY <strip> <intensity>
+*/
+void panel_intensity_action()
+{
+  char *striparg = sCmd.next();
+  if (!striparg) {
+    printError(F("protocol error"), F("wrong # of parameters to PANEL-PULSE"));
+    return;
+  }
+  uint8_t strip = atoi(striparg);
+  if (strip != 5) {
+    printError(F("protocol error"), F("Illegal strip argument"));
+    return;
+  }
+
+  char *intensityarg = sCmd.next();
+  if (!intensityarg) {
+    printError(F("protocol error"), F("wrong # of parameters to PANEL-PULSE"));
+    return;
+  }
+  uint8_t intensity = atoi(intensityarg);
+  if (intensity > 100) {
+    printError(F("protocol error"), F("Illegal intensity argument"));
+    return;
+  }
+
+  do_panel_intensity(strip, intensity);
 }
 
 void setupCommands()
 { 
   setupCommonCommands();
+  addCommand("PANEL-SET", panel_set_action);
+  addCommand("PANEL-PULSE", panel_pulse_action);
+  addCommand("PANEL-INTENSITY", panel_intensity_action);
+}
 
-  sCmd.addCommand("HANDSHAKE", handshake_action);
+void printCommands()
+{
+  Serial.println(F("SUPPORTED"));
+  printCommand("PANEL-SET", " 5");
+  printCommand("PANEL-PULSE", " 5");
+  printCommand("PANEL-INTENSITY", " 5");
+  Serial.println(F("ENDSUPPORTED"));
 }
