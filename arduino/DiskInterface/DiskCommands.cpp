@@ -121,7 +121,7 @@ void panel_set_action()
   }
 
   char *colorarg = sCmd.next();
-  uint32_t color;
+  CRGB color;
   if (colorarg && strcmp(colorarg, "-")) {
     if (!getColor(colorarg, color)) {
       printError(F("protocol error"), F("Illegal color argument"));
@@ -194,7 +194,7 @@ void panel_pulse_action()
   }
 
   char *colorarg = sCmd.next();
-  uint32_t color;
+  CRGB color;
   if (colorarg && strcmp(colorarg, "-")) {
     if (!getColor(colorarg, color)) {
       printError(F("protocol error"), F("Illegal color argument"));
