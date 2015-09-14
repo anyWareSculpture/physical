@@ -30,6 +30,10 @@ PANEL-SET 3 0 100 white pulse
 
 */
 
+#if !defined(__MK20DX256__)
+#error Oops!  Make sure you have 'Teensy 3.1' selected from the 'Tools -> Board' menu.
+#endif
+
 #include "./Timer.h"
 #include "./Bounce2.h"
 #include "DiskInterface.h"
