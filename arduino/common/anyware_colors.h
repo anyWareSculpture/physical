@@ -14,6 +14,7 @@ bool getColor(const char *colorstr, CRGB &col);
 // Colors
 const CRGB RED(255,0,0);
 const CRGB GREEN(0,255,0);
+const CRGB BLUE(0,0,255);
 const CRGB BLACK(0,0,0);
 const CRGB WHITE(255, 255, 255);
 const CRGB MYBLUE(0,20,147);
