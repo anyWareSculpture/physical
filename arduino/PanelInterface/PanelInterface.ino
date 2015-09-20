@@ -146,11 +146,10 @@ void right() {
 void do_panel_set(uint8_t strip, uint8_t panel, uint8_t intensity, const CRGB &color, AnywareEasing::EasingType  easing)
 {
   CRGB newcol = applyIntensity(color, intensity);
-  Serial.print(strip);Serial.print(" ");Serial.println(panel);
+
   const Pair &p = LEDStripInterface::mapToLED(strip, panel);
   if (p.stripid < 0 || p.pixelid < 0) {
     printError(F("client error"), F("Strip or panel out of range"));
-    Serial.print(p.stripid);Serial.print(" ");Serial.println(p.pixelid);
     return;
   }
   LEDStripInterface &s = LEDStripInterface::getStrip(p.stripid);
