@@ -15,18 +15,30 @@ DISK 2 POS 60 DIR 1 USER 2
 DISK 0 DIR 0 USER 1
 DISK 0 DIR 1 USER 1
 DISK 0 DIR -1 USER 1
-DISK 0 DIR 0 USER 1
-DISK 1 DIR 0 USER 1
-DISK 2 DIR 0 USER 1
+DISK 0 DIR 1 USER 1
+DISK 1 DIR -1 USER 1
+DISK 2 DIR 1 USER 1
 DISK-EXIT
 
 PANEL-SET 4 0 100 user0 easein
-PANEL-SET 4 0 100 white pulse
-PANEL-SET 4 0 100 white pop
 PANEL-SET 4 1 100 user1 easein
 PANEL-SET 4 2 100 user2 easein
+PANEL-SET 4 0 100 white pulse
+PANEL-SET 4 0 100 white pop
 PANEL-SET 3 0 100 error easein
-PANEL-SET 3 0 100 white pulse
+PANEL-SET 3 1 100 white pulse
+PANEL-SET 3 2 100 user0 easein
+PANEL-SET 3 3 100 user1 easein
+PANEL-SET 3 4 100 user2 easein
+PANEL-SET 3 5 100 user2 easein
+
+
+PANEL-SET 3 0 100 error
+PANEL-SET 3 1 100 white
+PANEL-SET 3 2 100 user0
+PANEL-SET 3 3 100 user1
+PANEL-SET 3 4 100 user2
+PANEL-SET 3 5 100 user2
 
 */
 
@@ -52,6 +64,7 @@ const int DISK0_ENC_A = 5;
 const int DISK0_ENC_B = 6;
 const int DISK0_MOTOR_A = 4;
 const int DISK0_MOTOR_B = 3;
+const int DISK0_TICKS_PER_REVOLUTION = 30513;
 
 // Middle disk
 const int DISK1_HOME_SENSOR = A1;
@@ -59,6 +72,7 @@ const int DISK1_ENC_A = 9;
 const int DISK1_ENC_B = 10;
 const int DISK1_MOTOR_A = 8;
 const int DISK1_MOTOR_B = 7;
+const int DISK1_TICKS_PER_REVOLUTION = 29689;
 
 // Bottom disk
 const int DISK2_HOME_SENSOR = A2;
@@ -66,13 +80,11 @@ const int DISK2_ENC_A = 20;
 const int DISK2_ENC_B = 19;
 const int DISK2_MOTOR_A = 17;
 const int DISK2_MOTOR_B = 18;
+const int DISK2_TICKS_PER_REVOLUTION = 30252;
 
 // Globals
 
-const int TICKS_PER_REVOLUTION = 31000;
-const float TICKS_PER_DEGREE = 1.0f*TICKS_PER_REVOLUTION/360;
-
-const uint8_t MAGNET_SENSITIVITY = 140;
+const uint8_t MAGNET_SENSITIVITY = 160;
 
 #define USER0_STR "0"
 #define USER1_STR "1"
@@ -102,6 +114,7 @@ struct Disk {
   int homeSensor;
   int enca, encb;
   int motorA,motorB;
+  uint32_t ticksPerRevolution;
 
   void (*enca_isr)();
   void (*encb_isr)();
@@ -126,8 +139,9 @@ struct Disk {
   int32_t lastExitTicks;
   int32_t lastHitTicks;
 
-  Disk(int diskid, int hs, int enca, int encb, int ma, int mb, void (*enca_isr)(), void (*encb_isr)()) :
+  Disk(int diskid, int hs, int enca, int encb, int ma, int mb, uint32_t ticks, void (*enca_isr)(), void (*encb_isr)()) :
     id(diskid), homeSensor(hs), enca(enca), encb(encb), motorA(ma), motorB(mb),
+    ticksPerRevolution(ticks),
     enca_isr(enca_isr), encb_isr(encb_isr),
     enca_val(false), encb_val(false),
     magnetValue(0), lastMagnetValue(0),
@@ -155,20 +169,20 @@ struct Disk {
   }
 
   inline uint16_t ticksToPos(int32_t ticks) {
-    if (ticks < 0) ticks += TICKS_PER_REVOLUTION;
-    return (ticks * 360 / TICKS_PER_REVOLUTION) % 360;
+    if (ticks < 0) ticks += ticksPerRevolution;
+    return (ticks * 360 / ticksPerRevolution) % 360;
   }
   
   inline void handleEncA() {
     enca_val = digitalRead(enca);
-    if (enca_val != encb_val) tickCount = (tickCount-1+TICKS_PER_REVOLUTION)%TICKS_PER_REVOLUTION;
-    else tickCount = (tickCount+1)%TICKS_PER_REVOLUTION;
+    if (enca_val != encb_val) tickCount = (tickCount-1+ticksPerRevolution)%ticksPerRevolution;
+    else tickCount = (tickCount+1)%ticksPerRevolution;
   }
 
   inline void handleEncB() {
     encb_val = digitalRead(encb);
-    if (enca_val == encb_val) tickCount = (tickCount-1+TICKS_PER_REVOLUTION)%TICKS_PER_REVOLUTION;
-    else tickCount = (tickCount+1)%TICKS_PER_REVOLUTION;
+    if (enca_val == encb_val) tickCount = (tickCount-1+ticksPerRevolution)%ticksPerRevolution;
+    else tickCount = (tickCount+1)%ticksPerRevolution;
   }
 
   void setState(int s) {
@@ -292,9 +306,9 @@ struct Disk {
 };
 
 Disk disk[3] = {
-  Disk(0, DISK0_HOME_SENSOR, DISK0_ENC_A, DISK0_ENC_B, DISK0_MOTOR_A, DISK0_MOTOR_B, &disk0a_isr, &disk0b_isr),
-  Disk(1, DISK1_HOME_SENSOR, DISK1_ENC_A, DISK1_ENC_B, DISK1_MOTOR_A, DISK1_MOTOR_B, &disk1a_isr, &disk1b_isr),
-  Disk(2, DISK2_HOME_SENSOR, DISK2_ENC_A, DISK2_ENC_B, DISK2_MOTOR_A, DISK2_MOTOR_B, &disk2a_isr, &disk2b_isr)
+  Disk(0, DISK0_HOME_SENSOR, DISK0_ENC_A, DISK0_ENC_B, DISK0_MOTOR_A, DISK0_MOTOR_B, DISK0_TICKS_PER_REVOLUTION, &disk0a_isr, &disk0b_isr),
+  Disk(1, DISK1_HOME_SENSOR, DISK1_ENC_A, DISK1_ENC_B, DISK1_MOTOR_A, DISK1_MOTOR_B, DISK1_TICKS_PER_REVOLUTION, &disk1a_isr, &disk1b_isr),
+  Disk(2, DISK2_HOME_SENSOR, DISK2_ENC_A, DISK2_ENC_B, DISK2_MOTOR_A, DISK2_MOTOR_B, DISK2_TICKS_PER_REVOLUTION, &disk2a_isr, &disk2b_isr)
 };
 
 void disk0a_isr() {
@@ -437,7 +451,6 @@ void do_disk(uint8_t diskid, int userid, int pos, Direction dir)
 void do_panel_set(uint8_t strip, uint8_t panel, uint8_t intensity, const CRGB &color, AnywareEasing::EasingType  easing)
 {
   CRGB newcol = applyIntensity(color, intensity);
-  Serial.print(strip);Serial.print(" ");Serial.println(panel);
   const Pair &p = LEDStripInterface::mapToLED(strip, panel);
   if (p.stripid < 0 || p.pixelid < 0) {
     printError(F("client error"), F("Strip or panel out of range"));
