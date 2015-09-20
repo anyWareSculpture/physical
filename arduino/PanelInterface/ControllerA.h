@@ -1,5 +1,5 @@
-
-#define STRIPREGEXP " [13]"
+#define STRIPID 0
+#define STRIPREGEXP " 0"
 
 #ifdef ANYWARE_MAIN
 
@@ -18,16 +18,16 @@ const int IRPin10 = 15;
 #define STRIP1_LEDS 10
 CRGB strip1_leds[STRIP1_LEDS];
 Pixel strip1_pixels[STRIP1_LEDS] = {
-  Pixel(1, 0),
-  Pixel(1, 1),
-  Pixel(1, 2),
-  Pixel(1, 3),
-  Pixel(1, 4),
-  Pixel(1, 5),
-  Pixel(1, 6),
-  Pixel(1, 7),
-  Pixel(1, 8),
-  Pixel(1, 9)
+  Pixel(STRIPID, 0),
+  Pixel(STRIPID, 1),
+  Pixel(STRIPID, 2),
+  Pixel(STRIPID, 3),
+  Pixel(STRIPID, 4),
+  Pixel(STRIPID, 5),
+  Pixel(STRIPID, 6),
+  Pixel(STRIPID, 7),
+  Pixel(STRIPID, 8),
+  Pixel(STRIPID, 9)
 };
 LEDStrip<SPI_DATA, SPI_CLOCK> strip1(STRIP1_LEDS, strip1_leds, strip1_pixels);
 
@@ -45,16 +45,16 @@ LEDStrip<16, 17> strip3(STRIP3_LEDS, strip3_leds, strip3_pixels);
 
 #define STRIP1_SENSORS 10
 Sensor strip1_sensors[STRIP1_SENSORS] = {
-  Sensor(1, 0, IRPin1),
-  Sensor(1, 1, IRPin2),
-  Sensor(1, 2, IRPin3),
-  Sensor(1, 3, IRPin4),
-  Sensor(1, 4, IRPin5),
-  Sensor(1, 5, IRPin6),
-  Sensor(1, 6, IRPin7),
-  Sensor(1, 7, IRPin8),
-  Sensor(1, 8, IRPin9),
-  Sensor(1, 9, IRPin10)
+  Sensor(STRIPID, 0, IRPin1),
+  Sensor(STRIPID, 1, IRPin2),
+  Sensor(STRIPID, 2, IRPin3),
+  Sensor(STRIPID, 3, IRPin4),
+  Sensor(STRIPID, 4, IRPin5),
+  Sensor(STRIPID, 5, IRPin6),
+  Sensor(STRIPID, 6, IRPin7),
+  Sensor(STRIPID, 7, IRPin8),
+  Sensor(STRIPID, 8, IRPin9),
+  Sensor(STRIPID, 9, IRPin10)
 };
 DiscreteSensors sensors(STRIP1_SENSORS, strip1_sensors);
 
