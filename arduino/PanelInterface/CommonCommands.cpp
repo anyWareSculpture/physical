@@ -9,6 +9,7 @@ void unrecognized(const char *cmd)
 /*!
   HELLO [<bool>]
 */
+int32_t lastHelloTime = -2*HELLO_BLACKOUT_TIME;
 void hello_action()
 {
   char *debugarg = sCmd.next();
@@ -16,8 +17,7 @@ void hello_action()
   if (debugarg) debug = atoi(debugarg);
 
   // Ignore duplicate HELLO messages within the blackout time period
-  static int32_t initTime = -2*HELLO_BLACKOUT_TIME;
-  uint32_t ms = millis() - initTime;
+  uint32_t ms = millis() - lastHelloTime;
   if (global_debug) {
     Serial.print(F("DEBUG HELLO received after "));
     Serial.print(ms);
@@ -30,7 +30,7 @@ void hello_action()
 
   resetInterface(debug);
 
-  initTime = millis();
+  lastHelloTime = millis();
 }
 
 void setupCommonCommands()
