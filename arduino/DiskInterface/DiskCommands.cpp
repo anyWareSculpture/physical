@@ -8,8 +8,6 @@
 */
 void disk_reset_action()
 {
-  if (!global_initialized) return;
-
   if (global_debug) {
     Serial.println("DEBUG DISK-RESET received");
   }
@@ -23,8 +21,6 @@ void disk_reset_action()
 */
 void disk_action()
 {
-  if (!global_initialized) return;
-
   char *arg = sCmd.next();
   uint8_t diskid = atoi(arg);
   if (diskid > 2) {

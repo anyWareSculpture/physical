@@ -62,9 +62,7 @@ PANEL-EXIT
 #include "LEDStrip.h"
 
 // Set to 1 to start in debug mode
-#define DEBUG_MODE 0
-// Define to start in auto-init mode (sets identity to 0 and state to Ready)
-#define AUTOINIT
+#define DEBUG_MODE 1
 
 // Sensitivity in millisecond. Less is more sensitive
 #define IR_SENSITIVITY 50
@@ -92,15 +90,8 @@ void resetInterface(bool debug)
   sensors.setup();
   resetColors();
 
-  global_initialized = false;
   global_debug = debug;
-  global_userid = -1;
   global_state = STATE_READY;
-
-#ifdef AUTOINIT
-  global_initialized = true;
-  global_userid = 0;
-#endif
 
   Serial.println();
   Serial.println(F("HELLO panel"));
@@ -202,8 +193,6 @@ void loop()
 { 
   handleSerial();
 
-  if (!global_initialized) return;
-  
   handleAnimations();
 
   if (global_state == STATE_READY) {

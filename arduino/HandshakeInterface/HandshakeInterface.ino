@@ -20,8 +20,6 @@ HANDSHAKE 1 2
 
 // Set to 1 to start in debug mode
 #define DEBUG_MODE 1
-// Define to start in auto-init mode (sets identity to 0 and state to Ready)
-#define AUTOINIT
 
 #define TOUCH_SENSOR_PIN  2
 
@@ -64,7 +62,6 @@ void resetInterface(bool debug)
   LEDStripInterface::setAllColors(BLACK);
 
   global_debug = debug;
-  global_userid = -1;
   global_state = STATE_HANDSHAKE; // Handshake is always on
   Serial.println();
   Serial.println("HELLO handshake");

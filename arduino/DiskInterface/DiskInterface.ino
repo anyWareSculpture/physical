@@ -55,8 +55,6 @@ PANEL-SET 3 5 100 user2
 
 // Set to 1 to start in debug mode
 #define DEBUG_MODE 1
-// Define to start in auto-init mode (sets identity to 0 and state to Ready)
-#define AUTOINIT
 
 // Top disk
 const int DISK0_HOME_SENSOR = A0;
@@ -410,14 +408,7 @@ void resetInterface(bool debug)
   LEDStripInterface::setAllColors(BLACK);
   setGlobalState(STATE_READY);
 
-  global_initialized = false;
   global_debug = debug;
-  global_userid = -1;
-
-#ifdef AUTOINIT
-  global_initialized = true;
-  global_userid = 0;
-#endif
 
   Serial.println();
   Serial.println("HELLO disk");
@@ -493,8 +484,6 @@ void handleAnimations()
 void loop()
 {
   handleSerial();
-
-  if (!global_initialized) return;
 
   timer.update();
   handleAnimations();

@@ -1,9 +1,7 @@
 #include "Arduino.h"
 #include "anyware_global.h"
 
-bool global_initialized = false;
 int global_state;
-int global_userid = -1;
 bool global_debug = false;
 
 #if 0 // Not used any longer

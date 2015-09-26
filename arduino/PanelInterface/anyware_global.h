@@ -8,9 +8,9 @@
 #define MAX_STRIPS 10
 #define MAX_PANELS 10
 
-extern bool global_initialized;
+#define HELLO_BLACKOUT_TIME 100
+
 extern int global_state;
-extern int global_userid;
 extern bool global_debug;
 
 // Called after performing the RESET command. Must be implemented by each interface.
