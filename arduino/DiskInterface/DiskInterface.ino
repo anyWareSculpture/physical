@@ -285,16 +285,16 @@ struct Disk {
 
       if (magnetActive(magnetValue) && !magnetActive(lastMagnetValue)) {
         // Hit left side of magnet
-        Serial.print(id);
-        Serial.print(" HIT TICKS " );
-        Serial.println(tickCount);
+        // Serial.print(id);
+        // Serial.print(" HIT TICKS " );
+        // Serial.println(tickCount);
         lastHitTicks = tickCount;
       }
       else if (!magnetActive(magnetValue) && magnetActive(lastMagnetValue)) {
         // Exited left side of magnet
-        Serial.print(id);
-        Serial.print(" EXIT TICKS " );
-        Serial.println(tickCount);
+        // Serial.print(id);
+        // Serial.print(" EXIT TICKS " );
+        // Serial.println(tickCount);
         lastExitTicks = tickCount;
       }
 
@@ -375,11 +375,11 @@ void manageDiskGame() {
       if (disk[i].getState() == Disk::DISK_HOMING) homed = false;
     }
     if (homed) {
-      for (int i=0;i<3;i++) {
-        Serial.print(disk[i].id);
-        Serial.print(" HOME TICKS ");
-        Serial.println(disk[i].tickCount);
-      }
+      // for (int i=0;i<3;i++) {
+      //   Serial.print(disk[i].id);
+      //   Serial.print(" HOME TICKS ");
+      //   Serial.println(disk[i].tickCount);
+      // }
       timer.stop(blinkerIdx);
       blinkerIdx = -1;
       LEDStripInterface::setAllColors(GREEN);
