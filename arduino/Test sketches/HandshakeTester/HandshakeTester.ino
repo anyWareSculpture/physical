@@ -24,12 +24,13 @@
 TouchSensor touch(TOUCH_SENSOR_PIN);
 
 // How many panels are attached to the Arduino?
-#define STRIP_LEDS  3
+#define STRIP_LEDS  4
 CRGB leds[STRIP_LEDS];
 Pixel pixels[STRIP_LEDS] = {
   Pixel(0, 0),
   Pixel(0, 1),
-  Pixel(0, 2)
+  Pixel(0, 2),
+  Pixel(0, 3)
 };
 LEDStrip<SPI_DATA, SPI_CLOCK> strip(STRIP_LEDS, leds, pixels);
 
@@ -53,10 +54,12 @@ void setup() {
   colorWipe(GREEN, 1000); // Green
   colorWipe(BLUE, 1000); // Blue
   colorWipe(BLACK, 1000); // Blue
+  strip.setColor(3, WHITE);
+  FastLED.show();
 }
 
 // Fill the dots one after the other with a color
-void colorWipe(uint32_t c, uint8_t wait) {
+void colorWipe(const CRGB &c, uint8_t wait) {
   for (int i=0;i<LEDStripInterface::getNumStrips();i++) {
     LEDStripInterface &s = LEDStripInterface::getStrip(i);
     for(uint8_t i=0; i<s.getNumPixels(); i++) {
