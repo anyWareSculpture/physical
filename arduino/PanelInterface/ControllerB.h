@@ -1,5 +1,5 @@
-#define STRIPID 0
-#define STRIPREGEXP " 0"
+#define STRIPID 1
+#define STRIPREGEXP " 1"
 
 #ifdef ANYWARE_MAIN
 
