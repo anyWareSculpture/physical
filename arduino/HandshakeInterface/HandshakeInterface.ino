@@ -9,6 +9,16 @@ IDENTITY 0
 HANDSHAKE 1 0
 HANDSHAKE 1 1
 HANDSHAKE 1 2
+
+PANEL-SET 5 0 100 user0 easein
+PANEL-SET 5 1 100 user1 easein
+PANEL-SET 5 2 100 user2 easein
+//PANEL-SET 5 3 100 white easein
+PANEL-PULSE 5 3 100 white sleep
+PANEL-SET 6 0 100 user0
+PANEL-SET 6 1 100 user0
+PANEL-SET 6 2 100 user0
+
 */
 
 #include "HandshakeInterface.h"
@@ -22,6 +32,12 @@ HANDSHAKE 1 2
 #define DEBUG_MODE 1
 
 #define TOUCH_SENSOR_PIN  2
+#define VIB_PIN  3
+#define LED1_PIN  4
+#define LED2_PIN  5
+#define LED3_PIN  6
+
+uint8_t highPowerLEDs[] = { LED1_PIN, LED2_PIN, LED3_PIN };
 
 // Tuned for proximity sensor
 #define TOUCH_THRESHOLD   50
@@ -34,12 +50,13 @@ HANDSHAKE 1 2
 TouchSensor touch(TOUCH_SENSOR_PIN);
 
 // How many panels are attached to the Arduino?
-#define STRIP_LEDS  3
+#define STRIP_LEDS  4
 CRGB leds[STRIP_LEDS];
 Pixel pixels[STRIP_LEDS] = {
   Pixel(5, 0),
   Pixel(5, 1),
-  Pixel(5, 2)
+  Pixel(5, 2),
+  Pixel(5, 3)
 };
 LEDStrip<SPI_DATA, SPI_CLOCK> strip(STRIP_LEDS, leds, pixels);
 
@@ -61,6 +78,14 @@ void resetInterface(bool debug)
   for (int i=0;i<LEDStripInterface::getNumStrips();i++) LEDStripInterface::getStrip(i).setup();
   LEDStripInterface::setAllColors(BLACK);
 
+  digitalWrite(VIB_PIN, 0);
+  pinMode(VIB_PIN, OUTPUT);
+  for (uint8_t i=0;i<3;i++) {
+    digitalWrite(highPowerLEDs[i], 1);
+    pinMode(highPowerLEDs[i], OUTPUT);
+  }
+
+
   global_debug = debug;
   global_state = STATE_HANDSHAKE; // Handshake is always on
   Serial.println();
@@ -72,7 +97,14 @@ void resetInterface(bool debug)
 void do_panel_set(uint8_t strip, uint8_t panel, uint8_t intensity, const CRGB &color, AnywareEasing::EasingType  easing)
 {
   CRGB newcol = applyIntensity(color, intensity);
-  Serial.print(strip);Serial.print(" ");Serial.println(panel);
+
+  if (strip == 6) {
+    // Handle high-power LEDs separately
+    uint8_t pin = highPowerLEDs[panel];
+    digitalWrite(pin, intensity == 0);
+    return;
+  }
+
   const Pair &p = LEDStripInterface::mapToLED(strip, panel);
   if (p.stripid < 0 || p.pixelid < 0) {
     printError(F("client error"), F("Strip or panel out of range"));
@@ -99,6 +131,11 @@ void do_panel_intensity(uint8_t strip, uint8_t intensity)
   // FIXME: We don't currently support per-strip intensity, only global intensity
   FastLED.setBrightness(255*intensity/100);
   FastLED.show();
+}
+
+void do_handshake(uint8_t numusers)
+{
+  analogWrite(VIB_PIN, 255 * numusers / 3);
 }
 
 // Detect and send handshake

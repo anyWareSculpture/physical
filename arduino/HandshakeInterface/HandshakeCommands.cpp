@@ -14,7 +14,7 @@ void panel_set_action()
     return;
   }
   uint8_t strip = atoi(striparg);
-  if (strip != 5) {
+  if (strip < 5 || strip > 6) {
     printError(F("protocol error"), F("Illegal strip argument"));
     return;
   }
@@ -25,7 +25,8 @@ void panel_set_action()
     return;
   }
   uint8_t panel = atoi(panelarg);
-  if (panel >= 3) {
+  if (strip == 5 && panel >= 4 ||
+      strip == 6 && panel >= 3) {
     printError(F("protocol error"), F("Illegal panel argument"));
     return;
   }
@@ -86,7 +87,7 @@ void panel_pulse_action()
     return;
   }
   uint8_t strip = atoi(striparg);
-  if (strip != 5) {
+  if (strip < 5 || strip > 6) {
     printError(F("protocol error"), F("Illegal strip argument"));
     return;
   }
@@ -97,7 +98,8 @@ void panel_pulse_action()
     return;
   }
   uint8_t panel = atoi(panelarg);
-  if (panel >= 3) {
+  if (strip == 5 && panel >= 4 ||
+      strip == 6 && panel >= 3) {
     printError(F("protocol error"), F("Illegal panel argument"));
     return;
   }
@@ -158,7 +160,7 @@ void panel_intensity_action()
     return;
   }
   uint8_t strip = atoi(striparg);
-  if (strip != 5) {
+  if (strip < 5 || strip > 6) {
     printError(F("protocol error"), F("Illegal strip argument"));
     return;
   }
@@ -177,19 +179,40 @@ void panel_intensity_action()
   do_panel_intensity(strip, intensity);
 }
 
+/*!
+  HANDSHAKE <numusers> (0-3)
+*/
+void handshake_action()
+{
+  char *usersarg = sCmd.next();
+  if (!usersarg) {
+    printError(F("protocol error"), F("wrong # of parameters to HANDSHAKE"));
+    return;
+  }
+  uint8_t numusers = atoi(usersarg);
+  if (numusers > 3) {
+    printError(F("protocol error"), F("Illegal numusers argument"));
+    return;
+  }
+
+  do_handshake(numusers);
+}
+
 void setupCommands()
 { 
   setupCommonCommands();
   addCommand("PANEL-SET", panel_set_action);
   addCommand("PANEL-PULSE", panel_pulse_action);
   addCommand("PANEL-INTENSITY", panel_intensity_action);
+  addCommand("HANDSHAKE", handshake_action);
 }
 
 void printCommands()
 {
   Serial.println(F("SUPPORTED"));
-  printCommand("PANEL-SET", " 5");
-  printCommand("PANEL-PULSE", " 5");
-  printCommand("PANEL-INTENSITY", " 5");
+  printCommand("PANEL-SET", " [56]");
+  printCommand("PANEL-PULSE", " [56]");
+  printCommand("PANEL-INTENSITY", " [56]");
+  printCommand("HANDSHAKE");
   Serial.println(F("ENDSUPPORTED"));
 }

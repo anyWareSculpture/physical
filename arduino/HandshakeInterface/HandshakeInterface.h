@@ -12,5 +12,6 @@ extern int global_state;
 void do_panel_set(uint8_t strip, uint8_t panel, uint8_t intensity, const CRGB &color, AnywareEasing::EasingType  easing);
 void do_panel_pulse(uint8_t strip, uint8_t panel, uint8_t intensity, const CRGB &color, AnywareEasing::EasingType  easing);
 void do_panel_intensity(uint8_t strip, uint8_t intensity);
+void do_handshake(uint8_t numusers);
 
 #endif
