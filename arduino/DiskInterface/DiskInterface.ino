@@ -5,8 +5,6 @@
 
   Example commands:
 
-IDENTITY 0
-DISK-INIT
 DISK-RESET
 DISK-STATE success
 DISK 0 POS 10 DIR 1 USER 1
@@ -402,8 +400,6 @@ void setup()
 
   resetInterface(DEBUG_MODE);
   setupCommands();
-
-  //  attachInterrupt(DISK0_ENC_A, disk0a_isr, CHANGE);
 }
 
 // Reset everything to initial state
@@ -428,7 +424,7 @@ void initInterface() {
 /*!
   DISK-RESET
 
-  Resets the game, home the disks and afterwards to into "ready" mode.
+  Home the disks and afterwards go into "ready" mode.
 */
 void do_disk_reset()
 {
