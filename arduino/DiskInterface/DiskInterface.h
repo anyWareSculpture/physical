@@ -4,8 +4,9 @@
 #include "AnywareEasing.h"
 
 // State flags
-const int STATE_READY  = 0;
-const int STATE_HOMING = 1;
+const int STATE_BLOCKED = -1;
+const int STATE_READY   = 0;
+const int STATE_HOMING  = 1;
 
 extern int global_state;
 

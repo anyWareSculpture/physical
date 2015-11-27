@@ -341,14 +341,19 @@ void disk2b_isr() {
 }
 
 void setGlobalState(int state) {
-  global_state = state;
-  if (global_state == STATE_HOMING) {
+  if (state == STATE_HOMING) {
+    global_state = STATE_BLOCKED; // Don't output anything before we start homing
+    // Move out of home zone for a bit to make sure we re-trigger the sensors
     for (int i=0;i<3;i++) disk[i].setTargetPosition(-1, DIR_CCW);
     homingIdx = timer.after(2000, startHoming, NULL);
+  }
+  else {
+    global_state = state;
   }
 }
 
 void startHoming(void *context) {
+  global_state = STATE_HOMING;
   blinkerIdx = timer.every(500, globalBlink, NULL);
   for (int i=0;i<3;i++) disk[i].setState(Disk::DISK_HOMING);
   homingIdx = -1;
