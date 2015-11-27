@@ -91,9 +91,9 @@ const uint8_t MAGNET_SENSITIVITY = 160;
 #define STRIP_LEDS 9
 CRGB strip_leds[STRIP_LEDS];
 Pixel strip_pixels[STRIP_LEDS] = {
-  Pixel(4, 0),
-  Pixel(4, 1),
   Pixel(4, 2),
+  Pixel(4, 1),
+  Pixel(4, 0),
   Pixel(3, 0),
   Pixel(3, 1),
   Pixel(3, 2),
