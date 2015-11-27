@@ -385,10 +385,11 @@ void manageDiskGame() {
       // }
       timer.stop(blinkerIdx);
       blinkerIdx = -1;
-      LEDStripInterface::setAllColors(GREEN);
-      delay(1000);
       setGlobalState(STATE_READY);
-      LEDStripInterface::setAllColors(BLACK);
+
+      // Turn off disk LEDs
+      for (int i=0;i<3;i++) strip.setColor(i, BLACK);
+      FastLED.show();
     }
   }
 
