@@ -52,7 +52,7 @@ PANEL-SET 3 5 100 user2
 #include "LEDStrip.h"
 
 // Set to 1 to start in debug mode
-#define DEBUG_MODE 1
+#define DEBUG_MODE 0
 
 // Top disk
 const int DISK0_HOME_SENSOR = A0;
