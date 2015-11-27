@@ -14,6 +14,7 @@ struct AnywareEasing {
     OUT_CUBIC,
     PULSE,
     POP,
+    SLEEP,
     BINARY_PULSE
   };
 

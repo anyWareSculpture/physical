@@ -11,6 +11,9 @@ bool AnywareEasing::getEasing(const char *easingstr, AnywareEasing::EasingType &
   else if (!strcmp(easingstr, "pop")) {
     easing = AnywareEasing::POP;
   }
+  else if (!strcmp(easingstr, "sleep")) {
+    easing = AnywareEasing::SLEEP;
+  }
   else {
     return false;
   }
@@ -38,6 +41,9 @@ void AnywareEasing::start(uint8_t type)
     break;
   case POP:
     duration = 500;
+    break;
+  case SLEEP:
+    duration = 4000;
     break;
   case BINARY_PULSE:
     duration = 200;
@@ -78,6 +84,9 @@ uint8_t AnywareEasing::apply(uint32_t t)
     break;
   case POP:
     v = Easing::easeOutCubic(dt, 128, -128, duration);
+    break;
+  case SLEEP:
+    v = Easing::pulseSleep(dt, 0, 0, duration);
     break;
   case BINARY_PULSE:
     v = (dt < duration) ? 255.0 : 0.0;
