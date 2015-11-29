@@ -28,7 +28,7 @@ struct AnywareEasing {
 
   static bool getEasing(const char *easingstr, AnywareEasing::EasingType &easing);
 
-  virtual void start(uint8_t type);
+  virtual void start(uint8_t type, uint16_t duration = 0);
   virtual uint32_t end();
   virtual uint8_t apply(uint32_t t);
 };
@@ -39,8 +39,8 @@ struct ColorEasing : public AnywareEasing {
   
   ColorEasing() : AnywareEasing() {  }
 
-  void start(uint8_t type, const CRGB &fromColor, const CRGB &toColor) {
-    AnywareEasing::start(type);
+  void start(uint8_t type, const CRGB &fromColor, const CRGB &toColor, uint16_t duration = 0) {
+    AnywareEasing::start(type, duration);
     this->fromColor = fromColor;
     this->toColor = toColor;
   }

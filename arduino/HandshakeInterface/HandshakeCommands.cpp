@@ -2,7 +2,7 @@
 #include "anyware_serial.h"
 
 /*!
-  PANEL-SET <strip> <panel> <intensity> <color> <easing>
+  PANEL-SET <strip> <panel> <intensity> <color> <easing> <duration>
 
   Only listens for strip 5
 */
@@ -60,6 +60,12 @@ void panel_set_action()
     }
   }
 
+  char *durationarg = sCmd.next();
+  uint16_t duration = 0;
+  if (durationarg) {
+    duration = atoi(durationarg);
+  }
+
   if (global_debug) {
     Serial.print(F("DEBUG PANEL-SET received: "));
     Serial.print(strip);
@@ -71,13 +77,15 @@ void panel_set_action()
     Serial.print(color, HEX);
     Serial.print(" ");
     Serial.print(easing);
+    Serial.print(" ");
+    Serial.print(duration);
     Serial.println();
   }
-  do_panel_set(strip, panel, intensity, color, easing);
+  do_panel_set(strip, panel, intensity, color, easing, duration);
 }
 
 /*!
-  PANEL-SENSORS <userid> <sensors>
+  PANEL-SET <strip> <panel> <intensity> <color> <easing> <duration>
 */
 void panel_pulse_action()
 {
@@ -133,6 +141,12 @@ void panel_pulse_action()
     }
   }
 
+  char *durationarg = sCmd.next();
+  uint16_t duration = 0;
+  if (durationarg) {
+    duration = atoi(durationarg);
+  }
+
   if (global_debug) {
     Serial.print(F("DEBUG PANEL-PULSE received: "));
     Serial.print(strip);
@@ -144,9 +158,11 @@ void panel_pulse_action()
     Serial.print(color, HEX);
     Serial.print(" ");
     Serial.print(easing);
+    Serial.print(" ");
+    Serial.print(duration);
     Serial.println();
   }
-  do_panel_pulse(strip, panel, intensity, color, easing);
+  do_panel_pulse(strip, panel, intensity, color, easing, duration);
 }
 
 /*!

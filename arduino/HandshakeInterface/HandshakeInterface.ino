@@ -94,7 +94,7 @@ void resetInterface(bool debug)
   printCommands();
 }
 
-void do_panel_set(uint8_t strip, uint8_t panel, uint8_t intensity, const CRGB &color, AnywareEasing::EasingType  easing)
+void do_panel_set(uint8_t strip, uint8_t panel, uint8_t intensity, const CRGB &color, AnywareEasing::EasingType easing, uint16_t duration)
 {
   CRGB newcol = applyIntensity(color, intensity);
 
@@ -117,13 +117,13 @@ void do_panel_set(uint8_t strip, uint8_t panel, uint8_t intensity, const CRGB &c
     FastLED.show();
   }
   else {
-    s.ease(p.pixelid, easing, newcol);
+    s.ease(p.pixelid, easing, newcol, duration);
   }
 }
 
-void do_panel_pulse(uint8_t strip, uint8_t panel, uint8_t intensity, const CRGB &color, AnywareEasing::EasingType  easing)
+void do_panel_pulse(uint8_t strip, uint8_t panel, uint8_t intensity, const CRGB &color, AnywareEasing::EasingType  easing, uint16_t duration)
 {
-  do_panel_set(strip, panel, intensity, color, easing);
+  do_panel_set(strip, panel, intensity, color, easing, duration);
 }
 
 void do_panel_intensity(uint8_t strip, uint8_t intensity)
