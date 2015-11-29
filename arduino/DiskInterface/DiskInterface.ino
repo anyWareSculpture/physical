@@ -54,13 +54,13 @@ PANEL-SET 3 5 100 user2
 // Set to 1 to start in debug mode
 #define DEBUG_MODE 0
 
-// Top disk
+// Bottom disk
 const int DISK0_HOME_SENSOR = A0;
 const int DISK0_ENC_A = 5;
 const int DISK0_ENC_B = 6;
 const int DISK0_MOTOR_A = 4;
 const int DISK0_MOTOR_B = 3;
-const int DISK0_TICKS_PER_REVOLUTION = 30513;
+const int DISK0_TICKS_PER_REVOLUTION = 30089;
 
 // Middle disk
 const int DISK1_HOME_SENSOR = A1;
@@ -68,15 +68,15 @@ const int DISK1_ENC_A = 9;
 const int DISK1_ENC_B = 10;
 const int DISK1_MOTOR_A = 8;
 const int DISK1_MOTOR_B = 7;
-const int DISK1_TICKS_PER_REVOLUTION = 29689;
+const int DISK1_TICKS_PER_REVOLUTION = 31348;
 
-// Bottom disk
+// Top disk
 const int DISK2_HOME_SENSOR = A2;
 const int DISK2_ENC_A = 20;
 const int DISK2_ENC_B = 19;
 const int DISK2_MOTOR_A = 17;
 const int DISK2_MOTOR_B = 18;
-const int DISK2_TICKS_PER_REVOLUTION = 30252;
+const int DISK2_TICKS_PER_REVOLUTION = 31385;
 
 // Globals
 
