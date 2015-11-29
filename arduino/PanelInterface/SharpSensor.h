@@ -4,7 +4,7 @@
 #include "./Bounce2.h"
 
 // Sensitivity in millisecond. Less is more sensitive
-#define IR_SENSITIVITY 10
+#define IR_SENSITIVITY 50
 
 class SharpSensor {
 public:
