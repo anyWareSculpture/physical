@@ -18,6 +18,7 @@ void disk_reset_action()
 
 /*!
   DISK <diskid> POS <deg> DIR <dir> USER <userid>
+  // FIXME: Return error if missing POS/DIR/USER to avoid "null" commands
 */
 void disk_action()
 {
