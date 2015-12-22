@@ -266,9 +266,9 @@ struct Disk {
 
     if (state == DISK_HOMING) {
       if (isHome()) {
-        setState(DISK_READY);
-        actualPosition = 0;
         tickCount = 0;
+        actualPosition = 0;
+        setState(DISK_READY);
       }
     }
     else if (state == DISK_READY) {
@@ -281,10 +281,14 @@ struct Disk {
 
       if (magnetActive(magnetValue) && !magnetActive(lastMagnetValue)) {
         // Hit left side of magnet
-        // Serial.print(id);
-        // Serial.print(" HIT TICKS " );
-        // Serial.println(tickCount);
-        lastHitTicks = tickCount;
+        int32_t tmpticks = tickCount;
+        if (global_state == STATE_READY && this->direction != DIR_OFF) {
+          Serial.print("DEBUG DISK ");
+          Serial.print(id);
+          Serial.print(" HIT TICKS " );
+          Serial.println(tmpticks);
+        }
+        lastHitTicks = tmpticks;
       }
       else if (!magnetActive(magnetValue) && magnetActive(lastMagnetValue)) {
         // Exited left side of magnet
