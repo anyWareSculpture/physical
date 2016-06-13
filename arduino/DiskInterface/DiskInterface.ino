@@ -18,26 +18,6 @@ DISK 1 DIR -1 USER 1
 DISK 2 DIR 1 USER 1
 DISK-EXIT
 
-PANEL-SET 4 0 100 user0 easein
-PANEL-SET 4 1 100 user1 easein
-PANEL-SET 4 2 100 user2 easein
-PANEL-SET 4 0 100 white pulse
-PANEL-SET 4 0 100 white pop
-PANEL-SET 3 0 100 error easein
-PANEL-SET 3 1 100 white pulse
-PANEL-SET 3 2 100 user0 easein
-PANEL-SET 3 3 100 user1 easein
-PANEL-SET 3 4 100 user2 easein
-PANEL-SET 3 5 100 user2 easein
-
-
-PANEL-SET 3 0 100 error
-PANEL-SET 3 1 100 white
-PANEL-SET 3 2 100 user0
-PANEL-SET 3 3 100 user1
-PANEL-SET 3 4 100 user2
-PANEL-SET 3 5 100 user2
-
 */
 
 #if !defined(__MK20DX256__)
@@ -47,9 +27,7 @@ PANEL-SET 3 5 100 user2
 #include "./Timer.h"
 #include "./Bounce2.h"
 #include "DiskInterface.h"
-#include "anyware_colors.h"
 #include "anyware_serial.h"
-#include "LEDStrip.h"
 
 // Set to 1 to start in debug mode
 #define DEBUG_MODE 0
@@ -86,23 +64,7 @@ const uint8_t MAGNET_SENSITIVITY = 160;
 #define USER1_STR "1"
 #define USER2_STR "2"
 
-#define STRIP_LEDS 9
-CRGB strip_leds[STRIP_LEDS];
-Pixel strip_pixels[STRIP_LEDS] = {
-  Pixel(4, 2),
-  Pixel(4, 1),
-  Pixel(4, 0),
-  Pixel(3, 0),
-  Pixel(3, 1),
-  Pixel(3, 2),
-  Pixel(3, 3),
-  Pixel(3, 4),
-  Pixel(3, 5),
-};
-LEDStrip<SPI_DATA, SPI_CLOCK> strip(STRIP_LEDS, strip_leds, strip_pixels);
-
 Timer timer;
-int8_t blinkerIdx = -1;
 int8_t homingIdx = -1;
 
 struct Disk {
@@ -305,11 +267,7 @@ struct Disk {
   }
 };
 
-Disk disk[3] = {
-  Disk(0, DISK0_HOME_SENSOR, DISK0_ENC_A, DISK0_ENC_B, DISK0_MOTOR_A, DISK0_MOTOR_B, DISK0_TICKS_PER_REVOLUTION, &disk0a_isr, &disk0b_isr),
-  Disk(1, DISK1_HOME_SENSOR, DISK1_ENC_A, DISK1_ENC_B, DISK1_MOTOR_A, DISK1_MOTOR_B, DISK1_TICKS_PER_REVOLUTION, &disk1a_isr, &disk1b_isr),
-  Disk(2, DISK2_HOME_SENSOR, DISK2_ENC_A, DISK2_ENC_B, DISK2_MOTOR_A, DISK2_MOTOR_B, DISK2_TICKS_PER_REVOLUTION, &disk2a_isr, &disk2b_isr)
-};
+extern Disk disk[3];
 
 void disk0a_isr() {
   cli();
@@ -342,6 +300,12 @@ void disk2b_isr() {
   sei();
 }
 
+Disk disk[3] = {
+  Disk(0, DISK0_HOME_SENSOR, DISK0_ENC_A, DISK0_ENC_B, DISK0_MOTOR_A, DISK0_MOTOR_B, DISK0_TICKS_PER_REVOLUTION, &disk0a_isr, &disk0b_isr),
+  Disk(1, DISK1_HOME_SENSOR, DISK1_ENC_A, DISK1_ENC_B, DISK1_MOTOR_A, DISK1_MOTOR_B, DISK1_TICKS_PER_REVOLUTION, &disk1a_isr, &disk1b_isr),
+  Disk(2, DISK2_HOME_SENSOR, DISK2_ENC_A, DISK2_ENC_B, DISK2_MOTOR_A, DISK2_MOTOR_B, DISK2_TICKS_PER_REVOLUTION, &disk2a_isr, &disk2b_isr)
+};
+
 void setGlobalState(int state) {
   if (state == STATE_HOMING) {
     global_state = STATE_BLOCKED; // Don't output anything before we start homing
@@ -356,21 +320,8 @@ void setGlobalState(int state) {
 
 void startHoming(void *context) {
   global_state = STATE_HOMING;
-  blinkerIdx = timer.every(500, globalBlink, NULL);
   for (int i=0;i<3;i++) disk[i].setState(Disk::DISK_HOMING);
   homingIdx = -1;
-}
-
-void globalBlink(void *context) {
-  if (global_state == STATE_HOMING) {
-    uint32_t t = millis() / 100;
-    const CRGB &c = (t % 2) ? BLACK : RED;
-    for (int i=0;i<3;i++) {
-      if (disk[i].getState() == Disk::DISK_HOMING) strip.setColor(i, c);
-      else strip.setColor(i, GREEN);
-    }
-    FastLED.show();
-  }
 }
 
 void manageDiskGame() {
@@ -385,13 +336,7 @@ void manageDiskGame() {
       //   Serial.print(" HOME TICKS ");
       //   Serial.println(disk[i].tickCount);
       // }
-      timer.stop(blinkerIdx);
-      blinkerIdx = -1;
       setGlobalState(STATE_READY);
-
-      // Turn off disk LEDs
-      for (int i=0;i<3;i++) strip.setColor(i, BLACK);
-      FastLED.show();
     }
   }
 
@@ -410,8 +355,6 @@ void setup()
 void resetInterface(bool debug)
 {
   for (int i=0;i<3;i++) disk[i].setup();
-  for (int i=0;i<LEDStripInterface::getNumStrips();i++) LEDStripInterface::getStrip(i).setup();
-  LEDStripInterface::setAllColors(BLACK);
   setGlobalState(STATE_READY);
 
   global_debug = debug;
@@ -432,7 +375,6 @@ void initInterface() {
 */
 void do_disk_reset()
 {
-  timer.stop(blinkerIdx);
   for (int i=0;i<3;i++) disk[i].reset();
   setGlobalState(STATE_HOMING);
 }
@@ -445,54 +387,11 @@ void do_disk(uint8_t diskid, int userid, int pos, Direction dir)
   disk[diskid].setTargetPosition(pos, dir);
 }
 
-void do_panel_set(uint8_t strip, uint8_t panel, uint8_t intensity, const CRGB &color, AnywareEasing::EasingType  easing)
-{
-  CRGB newcol = applyIntensity(color, intensity);
-  const Pair &p = LEDStripInterface::mapToLED(strip, panel);
-  if (p.stripid < 0 || p.pixelid < 0) {
-    printError(F("client error"), F("Strip or panel out of range"));
-    Serial.print(p.stripid);Serial.print(" ");Serial.println(p.pixelid);
-    return;
-  }
-  LEDStripInterface &s = LEDStripInterface::getStrip(p.stripid);
-  if (easing == AnywareEasing::BINARY) {
-    s.setColor(p.pixelid, newcol);
-    FastLED.show();
-  }
-  else {
-    s.ease(p.pixelid, easing, newcol);
-  }
-}
-
-void do_panel_pulse(uint8_t strip, uint8_t panel, uint8_t intensity, const CRGB &color, AnywareEasing::EasingType  easing)
-{
-  do_panel_set(strip, panel, intensity, color, easing);
-}
-
-void do_panel_intensity(uint8_t strip, uint8_t intensity)
-{
-  // FIXME: We don't currently support per-strip intensity, only global intensity
-  FastLED.setBrightness(255*intensity/100);
-  FastLED.show();
-}
-
-uint32_t animPrevTickTime = 0;
-void handleAnimations()
-{
-  uint32_t currtime = millis();
-
-  if (currtime - animPrevTickTime >= 1) { // tick
-    animPrevTickTime = currtime;
-    LEDStripInterface::applyEasings();
-  }
-}
-
 void loop()
 {
   handleSerial();
 
   timer.update();
-  handleAnimations();
   manageDiskGame();
 }
 
