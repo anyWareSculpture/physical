@@ -378,7 +378,10 @@ void do_disk_reset()
 */
 void do_disk(uint8_t diskid, int userid, int pos, Direction dir)
 {
-  disk[diskid].setTargetPosition(pos, dir);
+  // Ignore pos/dir commands while homing
+  if (disk[diskid].getState() == Disk::DISK_READY) {
+    disk[diskid].setTargetPosition(pos, dir);
+  }
 }
 
 void loop()
