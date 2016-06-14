@@ -5,7 +5,6 @@
 
 
   Example commands:
-IDENTITY 0
 HANDSHAKE 1 0
 HANDSHAKE 1 1
 HANDSHAKE 1 2
@@ -18,6 +17,13 @@ PANEL-PULSE 5 3 100 white sleep
 PANEL-SET 6 0 100 user0
 PANEL-SET 6 1 100 user0
 PANEL-SET 6 2 100 user0
+
+PANEL-SET 3 0 100 user0 easein
+PANEL-SET 3 1 100 user1 easein
+PANEL-SET 3 2 100 user2 easein
+PANEL-SET 3 3 100 succedss easein
+PANEL-SET 3 4 100 error easein
+PANEL-SET 3 5 100 white easein
 
 */
 
@@ -38,6 +44,7 @@ PANEL-SET 6 2 100 user0
 #define LED3_PIN  6
 
 uint8_t highPowerLEDs[] = { LED1_PIN, LED2_PIN, LED3_PIN };
+bool highPowerOnState[] = { false, false, true };
 
 // Tuned for proximity sensor
 #define TOUCH_THRESHOLD   50
@@ -50,13 +57,19 @@ uint8_t highPowerLEDs[] = { LED1_PIN, LED2_PIN, LED3_PIN };
 TouchSensor touch(TOUCH_SENSOR_PIN);
 
 // How many panels are attached to the Arduino?
-#define STRIP_LEDS  4
+#define STRIP_LEDS  10
 CRGB leds[STRIP_LEDS];
 Pixel pixels[STRIP_LEDS] = {
   Pixel(5, 0),
   Pixel(5, 1),
   Pixel(5, 2),
-  Pixel(5, 3)
+  Pixel(5, 3),
+  Pixel(3, 0),
+  Pixel(3, 1),
+  Pixel(3, 2),
+  Pixel(3, 3),
+  Pixel(3, 4),
+  Pixel(3, 5),
 };
 LEDStrip<SPI_DATA, SPI_CLOCK> strip(STRIP_LEDS, leds, pixels);
 
@@ -81,7 +94,7 @@ void resetInterface(bool debug)
   digitalWrite(VIB_PIN, 0);
   pinMode(VIB_PIN, OUTPUT);
   for (uint8_t i=0;i<3;i++) {
-    digitalWrite(highPowerLEDs[i], 1);
+    digitalWrite(highPowerLEDs[i], !highPowerOnState[i]);
     pinMode(highPowerLEDs[i], OUTPUT);
   }
 
@@ -101,8 +114,8 @@ void do_panel_set(uint8_t strip, uint8_t panel, uint8_t intensity, const CRGB &c
   if (strip == 6) {
     // Handle high-power LEDs separately
     uint8_t pin = highPowerLEDs[panel];
-    digitalWrite(pin, intensity == 0);
-    return;
+    digitalWrite(pin, intensity == 0 ? !highPowerOnState[panel] : highPowerOnState[panel]);
+  return;
   }
 
   const Pair &p = LEDStripInterface::mapToLED(strip, panel);
