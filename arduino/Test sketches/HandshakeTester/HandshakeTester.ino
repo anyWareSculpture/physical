@@ -8,12 +8,12 @@
 // SDA - A4
 // SCL - A5
 
-#define TOUCH_SENSOR_PIN  2
-#define VIB_PIN  3
+#define TOUCH_SENSOR_PIN  31
+#define VIB_PIN  11
 
-#define LED1_PIN  4
-#define LED2_PIN  5
-#define LED3_PIN  6
+#define LED1_PIN  8
+#define LED2_PIN  9
+#define LED3_PIN  10
 
 #include <Wire.h> // Needed to make Arduino add the corresponding include path
 #include "TouchSensor.h"
@@ -24,19 +24,13 @@
 TouchSensor touch(TOUCH_SENSOR_PIN);
 
 // How many panels are attached to the Arduino?
-#define STRIP_LEDS  10
+#define STRIP_LEDS  4
 CRGB leds[STRIP_LEDS];
 Pixel pixels[STRIP_LEDS] = {
   Pixel(0, 0),
   Pixel(0, 1),
   Pixel(0, 2),
   Pixel(0, 3),
-  Pixel(3, 0),
-  Pixel(3, 1),
-  Pixel(3, 2),
-  Pixel(3, 3),
-  Pixel(3, 4),
-  Pixel(3, 5),
 };
 LEDStrip<SPI_DATA, SPI_CLOCK> strip(STRIP_LEDS, leds, pixels);
 
