@@ -27,6 +27,10 @@ PANEL-SET 3 5 100 white easein
 
 */
 
+#if !defined(__AVR_ATmega1280__) && !defined(__AVR_ATmega2560__)
+  #error Oops!  Make sure you have 'Arduino/Genuino Mega or Mega 2560' selected from the 'Tools -> Board' menu.
+#endif
+
 #include "HandshakeInterface.h"
 #include <Wire.h> // Needed to make Arduino add the corresponding include path
 #include "TouchSensor.h"
