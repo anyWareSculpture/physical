@@ -21,6 +21,10 @@
 #include "LEDStrip.h"
 #include "anyware_colors.h"
 
+#if !defined(__AVR_ATmega1280__) && !defined(__AVR_ATmega2560__)
+  #error Oops!  Make sure you have 'Arduino/Genuino Mega or Mega 2560' selected from the 'Tools -> Board' menu.
+#endif
+
 TouchSensor touch(TOUCH_SENSOR_PIN);
 
 // How many panels are attached to the Arduino?
@@ -45,7 +49,7 @@ void setup() {
   pinMode(VIB_PIN, OUTPUT);
   digitalWrite(LED1_PIN, 1);
   digitalWrite(LED2_PIN, 1);
-  digitalWrite(LED3_PIN, 0);
+  digitalWrite(LED3_PIN, 1);
   pinMode(LED1_PIN, OUTPUT);
   pinMode(LED2_PIN, OUTPUT);
   pinMode(LED3_PIN, OUTPUT);
@@ -99,7 +103,7 @@ void do_handshake(bool active)
   digitalWrite(VIB_PIN, active);
   digitalWrite(LED1_PIN, !active);
   digitalWrite(LED2_PIN, !active);
-  digitalWrite(LED3_PIN, active);
+  digitalWrite(LED3_PIN, !active);
 }
 
 uint32_t animPrevTickTime = 0;
