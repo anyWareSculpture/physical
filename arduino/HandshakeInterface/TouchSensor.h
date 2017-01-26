@@ -2,8 +2,8 @@
 #define TOUCHSENSOR_H_
 
 // Tuned for proximity sensor
-#define TOUCH_THRESHOLD   50
-#define	RELEASE_THRESHOLD 30
+#define TOUCH_THRESHOLD   6
+#define	RELEASE_THRESHOLD 4
 
 class TouchSensor {
 public:
