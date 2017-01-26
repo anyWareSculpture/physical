@@ -62,7 +62,7 @@ PANEL-EXIT
 #include "LEDStrip.h"
 
 // Set to 1 to start in debug mode
-#define DEBUG_MODE 1
+#define DEBUG_MODE 0
 
 // Sensitivity in millisecond. Less is more sensitive
 #define IR_SENSITIVITY 50
