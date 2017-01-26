@@ -39,7 +39,7 @@ PANEL-SET 3 5 100 white easein
 #include "anyware_serial.h"
 
 // Set to 1 to start in debug mode
-#define DEBUG_MODE 1
+#define DEBUG_MODE 0
 
 #define TOUCH_SENSOR_PIN  31
 #define VIB_PIN  11
