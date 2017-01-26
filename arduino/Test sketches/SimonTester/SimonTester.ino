@@ -28,31 +28,31 @@ const int IRPin10 = 15;
 #define STRIP_LEDS 10
 CRGB leds[STRIP_LEDS];
 Pixel pixels[STRIP_LEDS] = {
-  Pixel(0, 0),
-  Pixel(0, 1),
-  Pixel(0, 2),
-  Pixel(0, 3),
-  Pixel(0, 4),
-  Pixel(0, 5),
-  Pixel(0, 6),
-  Pixel(0, 7),
+  Pixel(0, 9),
   Pixel(0, 8),
-  Pixel(0, 9)
+  Pixel(0, 7),
+  Pixel(0, 6),
+  Pixel(0, 5),
+  Pixel(0, 4),
+  Pixel(0, 3),
+  Pixel(0, 2),
+  Pixel(0, 1),
+  Pixel(0, 0)
 };
 LEDStrip<SPI_DATA, SPI_CLOCK> strip(STRIP_LEDS, leds, pixels);
 
 #define STRIP_SENSORS 10
 Sensor strip_sensors[STRIP_SENSORS] = {
-  Sensor(0, 0, IRPin1),
-  Sensor(0, 1, IRPin2),
-  Sensor(0, 2, IRPin3),
-  Sensor(0, 3, IRPin4),
-  Sensor(0, 4, IRPin5),
-  Sensor(0, 5, IRPin6),
-  Sensor(0, 6, IRPin7),
-  Sensor(0, 7, IRPin8),
-  Sensor(0, 8, IRPin9),
-  Sensor(0, 9, IRPin10)
+  Sensor(0, 9, IRPin1),
+  Sensor(0, 8, IRPin2),
+  Sensor(0, 7, IRPin3),
+  Sensor(0, 6, IRPin4),
+  Sensor(0, 5, IRPin5),
+  Sensor(0, 4, IRPin6),
+  Sensor(0, 3, IRPin7),
+  Sensor(0, 2, IRPin8),
+  Sensor(0, 1, IRPin9),
+  Sensor(0, 0, IRPin10)
 };
 DiscreteSensors sensors(STRIP_SENSORS, strip_sensors);
 
@@ -85,9 +85,13 @@ void loop() {
   for (int i=0;i<sensors.getNumSensors();i++) {
     Sensor &s = sensors.getSensor(i);
     s.readSensor();
-    if (s.getState()) numpixels++;
+    if (s.getState()) {
+      Serial.print(s.panel);
+      Serial.print(" ");
+      numpixels++;
+    }
   }
-  Serial.println(numpixels);
+  if (numpixels > 0) Serial.println();
   CRGB col;
   switch (numpixels) {
   case 0:
