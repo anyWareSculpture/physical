@@ -100,7 +100,7 @@ void resetInterface(bool debug)
   global_debug = debug;
   global_state = STATE_HANDSHAKE; // Handshake is always on
   Serial.println();
-  Serial.println("HELLO handshake");
+  Serial.println("HELLO handshake V1.0");
   if (global_debug) Serial.println("DEBUG handshake");
   printCommands();
 }

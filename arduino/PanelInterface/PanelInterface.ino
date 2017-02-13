@@ -94,7 +94,7 @@ void resetInterface(bool debug)
   global_state = STATE_READY;
 
   Serial.println();
-  Serial.println(F("HELLO panel"));
+  Serial.println(F("HELLO panel V1.0"));
   if (global_debug) Serial.println(F("DEBUG panel"));
   printCommands();
 }
