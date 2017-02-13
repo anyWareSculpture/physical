@@ -22,13 +22,13 @@ CRGB applyIntensity(const CRGB &col, uint8_t intensity)
 
 bool getColor(const char *colorstr, CRGB &col)
 {
-  if (!strcmp(colorstr, "user0")) {
+  if (!strcmp(colorstr, "sculpture1")) {
     col = locationColor[0];
   }
-  else if (!strcmp(colorstr, "user1")) {
+  else if (!strcmp(colorstr, "sculpture2")) {
     col = locationColor[1];
   }
-  else if (!strcmp(colorstr, "user2")) {
+  else if (!strcmp(colorstr, "sculpture3")) {
     col = locationColor[2];
   }
   else if (!strcmp(colorstr, "error")) {

@@ -7,39 +7,39 @@
 
 IDENTITY 0
 INIT
-PANEL-SET 1 0 100 user0 easein
-PANEL-SET 1 1 100 user1 easein
-PANEL-SET 3 2 100 user2 easein
+PANEL-SET 1 0 100 sculpture1 easein
+PANEL-SET 1 1 100 sculpture2 easein
+PANEL-SET 3 2 100 sculpture3 easein
 PANEL-SET 0 3 100 success easein
 PANEL-SET 0 4 100 white easein
-PANEL-SET 0 5 100 user0 easein
-PANEL-SET 0 6 100 user1 easein
-PANEL-SET 0 7 100 user2 easein
+PANEL-SET 0 5 100 sculpture1 easein
+PANEL-SET 0 6 100 sculpture2 easein
+PANEL-SET 0 7 100 sculpture3 easein
 PANEL-SET 0 8 100 success easein
 PANEL-SET 0 9 100 white easein
 
-PANEL-SET 0 0 100 user0
-PANEL-SET 0 1 100 user1 easein
-PANEL-SET 0 2 100 user2 easein
-PANEL-SET 0 4 25 user0
-PANEL-SET 0 5 100 user1
-PANEL-SET 1 3 100 user2
+PANEL-SET 0 0 100 sculpture1
+PANEL-SET 0 1 100 sculpture2 easein
+PANEL-SET 0 2 100 sculpture3 easein
+PANEL-SET 0 4 25 sculpture1
+PANEL-SET 0 5 100 sculpture2
+PANEL-SET 1 3 100 sculpture3
 PANEL-SET 1 4 100 error
 PANEL-SET 1 5 100 success
 PANEL-PULSE 0 3 100 success
 PANEL-SET 2 6 100 black
-PANEL-SET 2 6 100 user0 easein
-PANEL-SET 2 6 100 user2 easein
+PANEL-SET 2 6 100 sculpture1 easein
+PANEL-SET 2 6 100 sculpture3 easein
 PANEL-SET 2 6 100 success easein
 PANEL-SET 2 6 100 black easein
-PANEL-SET 2 6 100 user2 pop
-PANEL-SET 2 6 100 user2 pulse
+PANEL-SET 2 6 100 sculpture3 pop
+PANEL-SET 2 6 100 sculpture3 pulse
 PANEL-SET 2 6 100 white pulse
 PANEL-SET 2 6 100 white pop
 
-PANEL-SET 0 3 100 user0 easein
-PANEL-SET 0 4 100 user1 easein
-PANEL-SET 1 3 100 user2 easein
+PANEL-SET 0 3 100 sculpture1 easein
+PANEL-SET 0 4 100 sculpture2 easein
+PANEL-SET 1 3 100 sculpture3 easein
 PANEL-SET 2 3 100 white easein
 PANEL-SET 2 6 100 success easein
 PANEL-PULSE 2 6 100 success
@@ -94,7 +94,7 @@ void resetInterface(bool debug)
   global_state = STATE_READY;
 
   Serial.println();
-  Serial.println(F("HELLO panel V1.0"));
+  Serial.println(F("HELLO panel V1.1"));
   if (global_debug) Serial.println(F("DEBUG panel"));
   printCommands();
 }

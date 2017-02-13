@@ -78,7 +78,7 @@ void panel_set_action()
 }
 
 /*!
-  PANEL-SENSORS <userid> <sensors>
+  PANEL-PULSE <strip> <panel> <intensity> <color> <easing>
 */
 void panel_pulse_action()
 {

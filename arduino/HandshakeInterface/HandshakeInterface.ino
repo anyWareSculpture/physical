@@ -9,18 +9,18 @@ HANDSHAKE 1 0
 HANDSHAKE 1 1
 HANDSHAKE 1 2
 
-PANEL-SET 5 0 100 user0 easein
-PANEL-SET 5 1 100 user1 easein
-PANEL-SET 5 2 100 user2 easein
+PANEL-SET 5 0 100 sculpture1 easein
+PANEL-SET 5 1 100 sculpture2 easein
+PANEL-SET 5 2 100 sculpture3 easein
 //PANEL-SET 5 3 100 white easein
 PANEL-PULSE 5 3 100 white sleep
-PANEL-SET 6 0 100 user0
-PANEL-SET 6 1 100 user0
-PANEL-SET 6 2 100 user0
+PANEL-SET 6 0 100 sculpture1
+PANEL-SET 6 1 100 sculpture1
+PANEL-SET 6 2 100 sculpture1
 
-PANEL-SET 3 0 100 user0 easein
-PANEL-SET 3 1 100 user1 easein
-PANEL-SET 3 2 100 user2 easein
+PANEL-SET 3 0 100 sculpture1 easein
+PANEL-SET 3 1 100 sculpture2 easein
+PANEL-SET 3 2 100 sculpture3 easein
 PANEL-SET 3 3 100 succedss easein
 PANEL-SET 3 4 100 error easein
 PANEL-SET 3 5 100 white easein
@@ -112,7 +112,7 @@ void resetInterface(bool debug)
   global_debug = debug;
   global_state = STATE_HANDSHAKE; // Handshake is always on
   Serial.println();
-  Serial.println("HELLO handshake V1.1");
+  Serial.println("HELLO handshake V1.2a");
   if (global_debug) Serial.println("DEBUG handshake");
   printCommands();
 }
