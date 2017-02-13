@@ -47,8 +47,20 @@ PANEL-SET 3 5 100 white easein
 #define LED2_PIN  9
 #define LED3_PIN  10
 
+#define RED0_PIN 4
+#define GRN0_PIN 3
+#define BLU0_PIN 2
+#define RED1_PIN 7
+#define GRN1_PIN 6
+#define BLU1_PIN 5
+
 uint8_t highPowerLEDs[] = { LED1_PIN, LED2_PIN, LED3_PIN };
 bool highPowerOnState[] = { false, false, false };
+
+uint8_t rgbStripPins[2][3] = {
+  { RED0_PIN, GRN0_PIN, BLU0_PIN },
+  { RED1_PIN, GRN1_PIN, BLU1_PIN },
+};
 
 // Tuned for proximity sensor
 #define TOUCH_THRESHOLD   50
@@ -100,7 +112,7 @@ void resetInterface(bool debug)
   global_debug = debug;
   global_state = STATE_HANDSHAKE; // Handshake is always on
   Serial.println();
-  Serial.println("HELLO handshake V1.0");
+  Serial.println("HELLO handshake V1.1");
   if (global_debug) Serial.println("DEBUG handshake");
   printCommands();
 }
@@ -109,11 +121,18 @@ void do_panel_set(uint8_t strip, uint8_t panel, uint8_t intensity, const CRGB &c
 {
   CRGB newcol = applyIntensity(color, intensity);
 
+  if (strip == 3) {
+    // Handle RGB strips
+    for (uint8_t i=0;i<3;i++) {
+      analogWrite(rgbStripPins[panel][i], 255-color[i]);
+    }
+    return;
+  }
   if (strip == 6) {
-    // Handle high-power LEDs separately
+    // Handle high-power LEDs
     uint8_t pin = highPowerLEDs[panel];
     digitalWrite(pin, intensity == 0 ? !highPowerOnState[panel] : highPowerOnState[panel]);
-  return;
+    return;
   }
 
   const Pair &p = LEDStripInterface::mapToLED(strip, panel);

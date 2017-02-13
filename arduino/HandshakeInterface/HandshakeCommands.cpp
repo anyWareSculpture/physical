@@ -25,7 +25,7 @@ void panel_set_action()
     return;
   }
   uint8_t panel = atoi(panelarg);
-  if (strip == 3 && panel >= 6 ||
+  if (strip == 3 && panel >= 2 ||
       strip == 5 && panel >= 4 ||
       strip == 6 && panel >= 3) {
     printError(F("protocol error"), F("Illegal panel argument"));
@@ -109,7 +109,7 @@ void panel_pulse_action()
     return;
   }
   uint8_t panel = atoi(panelarg);
-  if (strip == 3 && panel >= 6 ||
+  if (strip == 3 && panel >= 2 ||
       strip == 5 && panel >= 4 ||
       strip == 6 && panel >= 3) {
     printError(F("protocol error"), F("Illegal panel argument"));

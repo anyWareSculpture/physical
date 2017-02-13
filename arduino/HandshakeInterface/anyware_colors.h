@@ -18,7 +18,9 @@ const CRGB BLUE(0,0,255);
 const CRGB BLACK(0,0,0);
 const CRGB WHITE(255, 255, 255);
 const CRGB MYBLUE(0,20,147);
-const CRGB MYYELLOW (255, 255, 0);
+const CRGB MYYELLOW(255, 255, 0);
 const CRGB MYPINK(255,20,147);
+const CRGB RGB0(255, 255, 0);
+const CRGB RGB1(255,20,147);
 
 #endif
