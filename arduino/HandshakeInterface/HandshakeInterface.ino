@@ -18,12 +18,8 @@ PANEL-SET 6 0 100 sculpture1
 PANEL-SET 6 1 100 sculpture1
 PANEL-SET 6 2 100 sculpture1
 
-PANEL-SET 3 0 100 sculpture1 easein
-PANEL-SET 3 1 100 sculpture2 easein
-PANEL-SET 3 2 100 sculpture3 easein
-PANEL-SET 3 3 100 succedss easein
-PANEL-SET 3 4 100 error easein
-PANEL-SET 3 5 100 white easein
+PANEL-SET 3 0 100 rgb0
+PANEL-SET 3 1 100 rgb1
 
 */
 
