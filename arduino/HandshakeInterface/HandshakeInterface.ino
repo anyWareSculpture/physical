@@ -108,7 +108,7 @@ void resetInterface(bool debug)
   global_debug = debug;
   global_state = STATE_HANDSHAKE; // Handshake is always on
   Serial.println();
-  Serial.println("HELLO handshake V1.2");
+  Serial.println("HELLO handshake V1.2.1");
   if (global_debug) Serial.println("DEBUG handshake");
   printCommands();
 }
@@ -120,7 +120,7 @@ void do_panel_set(uint8_t strip, uint8_t panel, uint8_t intensity, const CRGB &c
   if (strip == 3) {
     // Handle RGB strips
     for (uint8_t i=0;i<3;i++) {
-      analogWrite(rgbStripPins[panel][i], 255-color[i]);
+      analogWrite(rgbStripPins[panel][i], 255-newcol[i]);
     }
     return;
   }
