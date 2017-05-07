@@ -1,0 +1,12 @@
+[Unit]
+Description=Run the anyWare app in Chromium
+After=default.target
+
+[Service]
+Type=simple
+Environment=DISPLAY=:0
+ExecStart=/home/pi/start_anyware.sh
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
