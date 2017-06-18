@@ -90,6 +90,7 @@ namespace Easing{
 	float easeInBounce (float t, float b, float c, float d);
 	float easeOutBounce (float t, float b, float c, float d);
 	float easeInOutBounce (float t, float b, float c, float d);
+	float pulseSleep (float t, float b, float c, float d);
 }
 //};
 

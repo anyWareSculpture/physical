@@ -332,3 +332,8 @@ float Easing::easeInOutBounce (float t, float b, float c, float d) {
 	if (t < d/2) return easeInBounce (t*2, 0, c, d) * .5 + b;
 	return easeOutBounce (t*2-d, 0, c, d) * .5 + c*.5 + b;
 }
+
+// sleep pulse - goes back to zero
+float Easing::pulseSleep (float t, float b, float c, float d) {
+  return (exp(sin((t-d/4)/d*2*M_PI))-1/M_E)*255/(M_E-1/M_E);
+}

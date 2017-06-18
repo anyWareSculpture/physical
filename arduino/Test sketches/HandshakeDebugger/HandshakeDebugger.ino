@@ -6,7 +6,7 @@
 #define CONTINUOUS_OUTPUT
 
 
-#define IRQ_PIN 53
+#define IRQ_PIN 31
 #define ADDR 0x5A
 
 #define LED1_PIN  8
@@ -44,8 +44,8 @@ void setup(){
   mpr121_setup2();
   //  mpr121_setup();
 
-  MPR121.setTouchThreshold(50);
-  MPR121.setReleaseThreshold(30);  
+  MPR121.setTouchThreshold(6);
+  MPR121.setReleaseThreshold(4);  
 
 
   Serial.println("Hello Touch");

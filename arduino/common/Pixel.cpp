@@ -5,26 +5,31 @@
 #define NUM_EASINGS 5
 static ColorEasing easings[NUM_EASINGS];
 
-void Pixel::ease(AnywareEasing::EasingType type, const CRGB &toColor, CRGB &buf)
+void Pixel::cancelEasing(CRGB &buf)
+{
+  if (this->easingid >= 0) {
+    uint32_t val = easings[this->easingid].end();
+    buf = val;
+    this->easingid = -1;
+  }
+}
+
+void Pixel::ease(AnywareEasing::EasingType type, const CRGB &toColor, CRGB &buf, uint16_t duration)
 {
   // If we're already easing, end the easing and start another one
-  if (easingid >= 0) {
-    uint32_t val = easings[easingid].end();
-    buf = val;
-    easingid = -1;
-  }
+  if (this->easingid >= 0) this->cancelEasing(buf);
 
   // Find available easing
   for (uint8_t i=0;i<NUM_EASINGS;i++) {
     if (!easings[i].active) {
-      easingid = i;
+      this->easingid = i;
       break;
     }
   }
-  if (easingid >= 0) {
-    easings[easingid].start(type, buf, toColor);
+  if (this->easingid >= 0) {
+    easings[this->easingid].start(type, buf, toColor, duration);
     if (global_debug) {
-      Serial.print("DEBUG Found easing: "); Serial.println(easingid);
+      Serial.print("DEBUG Found easing: "); Serial.println(this->easingid);
     }
   }
   else {
@@ -36,14 +41,16 @@ void Pixel::ease(AnywareEasing::EasingType type, const CRGB &toColor, CRGB &buf)
 bool Pixel::applyEasing(CRGB &buf)
 {
   bool retval = false;
-  if (easingid >=0 && easings[easingid].active) {
-    uint8_t oldval = easings[easingid].currval;
-    CRGB col = easings[easingid].applyColor(millis());
-    if (oldval != easings[easingid].currval) {
+  if (this->easingid >=0 && easings[this->easingid].active) {
+    uint8_t oldval = easings[this->easingid].currval;
+    CRGB col = easings[this->easingid].applyColor(millis());
+    if (oldval != easings[this->easingid].currval) {
       buf = col;
       retval = true;
     }
-    if (!easings[easingid].active) easingid = -1;
+    if (!easings[this->easingid].active) {
+      this->easingid = -1;
+    }
   }
   return retval;
 }

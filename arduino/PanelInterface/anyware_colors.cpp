@@ -43,6 +43,12 @@ bool getColor(const char *colorstr, CRGB &col)
   else if (!strcmp(colorstr, "white")) {
     col = WHITE;
   }
+  else if (!strcmp(colorstr, "rgb0")) {
+    col = RGB0;
+  }
+  else if (!strcmp(colorstr, "rgb1")) {
+    col = RGB1;
+  }
   else {
     return false;
   }

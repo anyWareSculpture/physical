@@ -55,7 +55,7 @@ public:
   virtual void setColor(uint8_t pixel, const CRGB &col) = 0;
   virtual const CRGB &getColor(uint8_t pixel) = 0;
 
-  virtual void ease(uint8_t pixel, AnywareEasing::EasingType type, const CRGB &toColor) = 0;
+  virtual void ease(uint8_t pixel, AnywareEasing::EasingType type, const CRGB &toColor, uint16_t duration = 0) = 0;
   virtual bool applyEasing() = 0;
 
   static void applyEasings() {
@@ -91,6 +91,7 @@ public:
   }
 
   virtual void setColor(uint8_t pixelid, const CRGB &col) {
+    pixels[pixelid].cancelEasing(leds[pixelid]);
     leds[pixelid] = col;
   }
 
@@ -98,8 +99,8 @@ public:
     return leds[pixelid];
   }
 
-  virtual void ease(uint8_t pixelid, AnywareEasing::EasingType type, const CRGB &toColor) {
-    pixels[pixelid].ease(type, toColor, leds[pixelid]);
+  virtual void ease(uint8_t pixelid, AnywareEasing::EasingType type, const CRGB &toColor, uint16_t duration = 0) {
+    pixels[pixelid].ease(type, toColor, leds[pixelid], duration);
   }
 
   virtual bool applyEasing() {
