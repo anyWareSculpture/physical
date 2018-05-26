@@ -12,7 +12,8 @@ HANDSHAKE 1 2
 PANEL-SET 5 0 100 sculpture1 easein
 PANEL-SET 5 1 100 sculpture2 easein
 PANEL-SET 5 2 100 sculpture3 easein
-//PANEL-SET 5 3 100 white easein
+PANEL-SET 5 3 100 sculpture3 easein
+PANEL-SET 5 3 0 sculpture3 easein
 PANEL-PULSE 5 3 100 white sleep
 PANEL-SET 6 0 100 sculpture1
 PANEL-SET 6 1 100 sculpture1
