@@ -86,7 +86,7 @@ void panel_set_action()
 }
 
 /*!
-  PANEL-SET <strip> <panel> <intensity> <color> <easing> <duration>
+  PANEL-PULSE <strip> <panel> <intensity> <color> <easing> <duration>
 
   Listens for strip 3, 5 and 6
 */
