@@ -29,7 +29,7 @@ struct AnywareEasing {
   static bool getEasing(const char *easingstr, AnywareEasing::EasingType &easing);
 
   virtual void start(uint8_t type, uint16_t duration = 0);
-  virtual uint32_t end();
+  virtual uint8_t end();
   virtual uint8_t apply(uint32_t t);
 };
 

@@ -11,7 +11,7 @@ struct Pixel {
 
   void ease(AnywareEasing::EasingType type, const CRGB &toColor, CRGB &buf, uint16_t duration = 0);
   bool applyEasing(CRGB &buf);
-  void cancelEasing(CRGB &buf);
+  void cancelEasing(const CRGB &buf);
 
   uint8_t strip;
   uint8_t panel;

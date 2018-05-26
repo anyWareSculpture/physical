@@ -58,7 +58,7 @@ void AnywareEasing::start(uint8_t type, uint16_t duration)
   }
 }
 
-uint32_t AnywareEasing::end()
+uint8_t AnywareEasing::end()
 {
   active = false;
   return apply(startTime + this->duration);

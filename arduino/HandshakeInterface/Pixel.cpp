@@ -5,11 +5,10 @@
 #define NUM_EASINGS 5
 static ColorEasing easings[NUM_EASINGS];
 
-void Pixel::cancelEasing(CRGB &buf)
+void Pixel::cancelEasing(const CRGB &buf)
 {
   if (this->easingid >= 0) {
-    uint32_t val = easings[this->easingid].end();
-    buf = val;
+    uint8_t endval = easings[this->easingid].end();
     this->easingid = -1;
   }
 }
