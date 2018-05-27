@@ -49,6 +49,9 @@ PANEL-STATE success
 PANEL-STATE failure
 PANEL-EXIT
 
+PANEL-SET 2 3 100 white
+PANEL-SET 2 3 0 white
+
 
  */
 
@@ -94,7 +97,7 @@ void resetInterface(bool debug)
   global_state = STATE_READY;
 
   Serial.println();
-  Serial.println(F("HELLO panel V1.1"));
+  Serial.println(F("HELLO panel V1.2"));
   if (global_debug) Serial.println(F("DEBUG panel"));
   printCommands();
 }
