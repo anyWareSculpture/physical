@@ -14,6 +14,7 @@ PANEL-SET 5 1 100 sculpture2 easein
 PANEL-SET 5 2 100 sculpture3 easein
 PANEL-SET 5 3 100 sculpture3 easein
 PANEL-SET 5 3 0 sculpture3 easein
+PANEL-SET 5 3 0 white easein
 PANEL-PULSE 5 3 100 white sleep
 PANEL-SET 6 0 100 sculpture1
 PANEL-SET 6 1 100 sculpture1
@@ -109,7 +110,7 @@ void resetInterface(bool debug)
   global_debug = debug;
   global_state = STATE_HANDSHAKE; // Handshake is always on
   Serial.println();
-  Serial.println("HELLO handshake V1.2.1");
+  Serial.println("HELLO handshake V1.3");
   if (global_debug) Serial.println("DEBUG handshake");
   printCommands();
 }
