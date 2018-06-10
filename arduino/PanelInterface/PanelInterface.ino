@@ -18,6 +18,9 @@ PANEL-SET 0 7 100 sculpture3 easein
 PANEL-SET 0 8 100 success easein
 PANEL-SET 0 9 100 white easein
 
+PANEL-SET 0 012345 100 sculpture1
+PANEL-SET 0 6789 100 sculpture3
+
 PANEL-SET 0 0 100 sculpture1
 PANEL-SET 0 1 100 sculpture2 easein
 PANEL-SET 0 2 100 sculpture3 easein
@@ -94,7 +97,7 @@ void resetInterface(bool debug)
   global_debug = debug;
 
   Serial.println();
-  Serial.println(F("HELLO panel V1.2"));
+  Serial.println(F("HELLO panel V1.3"));
   if (global_debug) Serial.println(F("DEBUG panel"));
   printCommands();
 }
@@ -117,36 +120,49 @@ void handleSensors() {
 }
 
 // FIXME: We don't currently support duration
-void do_panel_set(uint8_t strip, uint8_t panel, uint8_t intensity, const CRGB &color, AnywareEasing::EasingType  easing)
+void do_panel_set(uint8_t strip, PanelSet panels, uint8_t intensity, const CRGB &color, AnywareEasing::EasingType  easing)
 {
   CRGB newcol = applyIntensity(color, intensity);
-
-  const Pair &p = LEDStripInterface::mapToLED(strip, panel);
-  if (p.stripid < 0 || p.pixelid < 0) {
-    printError(F("client error"), F("Strip or panel out of range"));
-    return;
+  
+  for (uint8_t i=0;i<10;++i) {
+    if (panels.get(i)) {
+      const uint8_t panel = i;
+      const Pair &p = LEDStripInterface::mapToLED(strip, panel);
+      if (p.stripid < 0 || p.pixelid < 0) {
+	printError(F("client error"), F("Strip or panel out of range"));
+	return;
+      }
+      LEDStripInterface &s = LEDStripInterface::getStrip(p.stripid);
+      if (easing == AnywareEasing::BINARY) {
+	s.setColor(p.pixelid, newcol);
+      }
+      else {
+	// FIXME: We don't yet support easing of groups of pixels
+	s.ease(p.pixelid, easing, newcol);
+      }
+    }
   }
-  LEDStripInterface &s = LEDStripInterface::getStrip(p.stripid);
   if (easing == AnywareEasing::BINARY) {
-    s.setColor(p.pixelid, newcol);
     FastLED.show();
-  }
-  else {
-    s.ease(p.pixelid, easing, newcol);
   }
 }
 
 // FIXME: We don't currently support duration
-void do_panel_pulse(uint8_t strip, uint8_t panel, uint8_t intensity, const CRGB &color, AnywareEasing::EasingType  easing)
+void do_panel_pulse(uint8_t strip, PanelSet panels, uint8_t intensity, const CRGB &color, AnywareEasing::EasingType  easing)
 {
-  CRGB newcol = applyIntensity(color, intensity);
-  const Pair &p = LEDStripInterface::mapToLED(strip, panel);
-  if (p.stripid < 0 || p.pixelid < 0) {
-    printError(F("client error"), F("Strip or panel out of range"));
-    return;
+  for (uint8_t i=0;i<10;++i) {
+    if (panels.get(i)) {
+      const uint8_t panel = i;
+      CRGB newcol = applyIntensity(color, intensity);
+      const Pair &p = LEDStripInterface::mapToLED(strip, panel);
+      if (p.stripid < 0 || p.pixelid < 0) {
+	printError(F("client error"), F("Strip or panel out of range"));
+	return;
+      }
+      LEDStripInterface &s = LEDStripInterface::getStrip(p.stripid);
+      s.ease(p.pixelid, easing, newcol);
+    }
   }
-  LEDStripInterface &s = LEDStripInterface::getStrip(p.stripid);
-  s.ease(p.pixelid, easing, newcol);
 }
 
 // FIXME: We don't currently support per-strip intensity, only global intensity

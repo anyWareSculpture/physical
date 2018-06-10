@@ -2,6 +2,7 @@
 #include "anyware_serial.h"
 #include "anyware_colors.h"
 #include "configuration.h"
+#include "PanelSet.h"
 
 extern SerialCommand sCmd;
 
@@ -26,12 +27,19 @@ void panel_set_action()
     printError(F("protocol error"), F("wrong # of parameters to PANEL-SET"));
     return;
   }
-  uint8_t panel = atoi(panelarg);
-  if (panel >= 10) {
-    printError(F("protocol error"), F("Illegal panel argument"));
-    return;
-  }
 
+  PanelSet panels;
+  const uint8_t numPanels = strlen(panelarg);
+  for (uint8_t i=0;i<numPanels;++i) {
+    const char digit = panelarg[i];
+    if (digit < '0' || digit > '9') {
+      printError(F("protocol error"), F("Illegal panel argument"));
+      return;
+    }
+    uint8_t panel = digit - '0';
+    panels.set(panel);
+  }
+  
   char *intensityarg = sCmd.next();
   if (!intensityarg) {
     printError(F("protocol error"), F("wrong # of parameters to PANEL-SET"));
@@ -65,7 +73,7 @@ void panel_set_action()
     Serial.print(F("DEBUG PANEL-SET received: "));
     Serial.print(strip);
     Serial.print(" ");
-    Serial.print(panel);
+    Serial.print(panels.panels);
     Serial.print(" ");
     Serial.print(intensity);
     Serial.print(" ");
@@ -74,7 +82,7 @@ void panel_set_action()
     Serial.print(easing);
     Serial.println();
   }
-  do_panel_set(strip, panel, intensity, color, easing);
+  do_panel_set(strip, panels, intensity, color, easing);
 }
 
 /*!
@@ -98,10 +106,17 @@ void panel_pulse_action()
     printError(F("protocol error"), F("wrong # of parameters to PANEL-PULSE"));
     return;
   }
-  uint8_t panel = atoi(panelarg);
-  if (panel >= 10) {
-    printError(F("protocol error"), F("Illegal panel argument"));
-    return;
+
+  PanelSet panels;
+  const uint8_t numPanels = strlen(panelarg);
+  for (uint8_t i=0;i<numPanels;++i) {
+    const char digit = panelarg[i];
+    if (digit < '0' || digit > '9') {
+      printError(F("protocol error"), F("Illegal panel argument"));
+      return;
+    }
+    uint8_t panel = digit - '0';
+    panels.set(panel);
   }
 
   char *intensityarg = sCmd.next();
@@ -138,7 +153,7 @@ void panel_pulse_action()
     Serial.print(F("DEBUG PANEL-PULSE received: "));
     Serial.print(strip);
     Serial.print(" ");
-    Serial.print(panel);
+    Serial.print(panels.panels);
     Serial.print(" ");
     Serial.print(intensity);
     Serial.print(" ");
@@ -147,7 +162,7 @@ void panel_pulse_action()
     Serial.print(easing);
     Serial.println();
   }
-  do_panel_pulse(strip, panel, intensity, color, easing);
+  do_panel_pulse(strip, panels, intensity, color, easing);
 }
 
 /*!
