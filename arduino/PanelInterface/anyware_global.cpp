@@ -1,7 +1,6 @@
 #include "Arduino.h"
 #include "anyware_global.h"
 
-int global_state;
 bool global_debug = false;
 
 #if 0 // Not used any longer

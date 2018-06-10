@@ -10,7 +10,6 @@
 
 #define HELLO_BLACKOUT_TIME 100
 
-extern int global_state;
 extern bool global_debug;
 
 // Called after performing the RESET command. Must be implemented by each interface.

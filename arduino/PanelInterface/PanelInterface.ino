@@ -45,8 +45,6 @@ PANEL-SET 2 6 100 success easein
 PANEL-PULSE 2 6 100 success
 PANEL-SET 2 6 100 black
 
-PANEL-STATE success
-PANEL-STATE failure
 PANEL-EXIT
 
 PANEL-SET 2 3 100 white
@@ -94,7 +92,6 @@ void resetInterface(bool debug)
   resetColors();
 
   global_debug = debug;
-  global_state = STATE_READY;
 
   Serial.println();
   Serial.println(F("HELLO panel V1.2"));
@@ -117,23 +114,6 @@ void handleSensors() {
       Serial.println(sensors.getState(i) ? 1 : 0);
     }
   }
-}
-
-void wrong() {
-  LEDStripInterface::setAllColors(RED);
-  delay(1000);
-  LEDStripInterface::setAllColors(BLACK);
-  resetColors();
-}
-
-void right() {
-  for (int loopSuccess = 0; loopSuccess < 5; loopSuccess++) {
-    LEDStripInterface::setAllColors(GREEN);
-    delay(200);
-    LEDStripInterface::setAllColors(BLACK);
-    delay(200);     
-  }
-  resetColors();
 }
 
 // FIXME: We don't currently support duration
@@ -176,11 +156,6 @@ void do_panel_intensity(uint8_t strip, uint8_t intensity)
   FastLED.show();
 }
 
-void do_panel_state(int state)
-{
-  global_state = state;
-}
-
 uint32_t animPrevTickTime = 0;
 void handleAnimations()
 {
@@ -198,17 +173,5 @@ void loop()
 
   handleAnimations();
 
-  if (global_state == STATE_READY) {
-    handleSensors();
-  }
-  else if (global_state == STATE_SUCCESS) {
-    right();
-    global_state = STATE_READY;
-    Serial.println(F("PANEL-STATE ready"));
-  }
-  else if (global_state == STATE_FAILURE) {
-    wrong();
-    global_state = STATE_READY;
-    Serial.println(F("PANEL-STATE ready"));
-  }
+  handleSensors();
 }

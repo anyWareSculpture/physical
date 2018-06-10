@@ -180,40 +180,6 @@ void panel_intensity_action()
   do_panel_intensity(strip, intensity);
 }
 
-/*!
-  PANEL-ANIMATE <name>
-*/
-void panel_animate_action()
-{
-  Serial.println(F("PANEL-STATE animate"));
-  Serial.println(F("PANEL-STATE ready"));
-}
-
-/*!
-  PANEL-STATE <"success" | "failure">
-*/
-void panel_state_action()
-{
-  char *arg = sCmd.next();
-  int state;
-  if (!strcmp(arg, "success")) {
-    state = STATE_SUCCESS;
-  }
-  else if (!strcmp(arg, "failure")) {
-    state = STATE_FAILURE;
-  }
-  else {
-    printError(F("protocol error"), F("Illegal argument to PANEL-STATE"));
-    return;
-  }
-
-  if (global_debug) {
-    Serial.print(F("DEBUG PANEL-STATE received: "));
-    Serial.println(arg);
-  }
-  do_panel_state(state);
-}
-
 void setupCommands()
 { 
   setupCommonCommands();
@@ -221,8 +187,6 @@ void setupCommands()
   addCommand("PANEL-SET", panel_set_action);
   addCommand("PANEL-PULSE", panel_pulse_action);
   addCommand("PANEL-INTENSITY", panel_intensity_action);
-  addCommand("PANEL-ANIMATE", panel_animate_action);
-  addCommand("PANEL-STATE", panel_state_action);
 }
 
 void printCommands()
@@ -231,7 +195,5 @@ void printCommands()
   printCommand("PANEL-SET", STRIPREGEXP);
   printCommand("PANEL-PULSE", STRIPREGEXP);
   printCommand("PANEL-INTENSITY", STRIPREGEXP);
-  printCommand("PANEL-ANIMATE");
-  printCommand("PANEL-STATE");
   Serial.println(F("ENDSUPPORTED"));
 }
