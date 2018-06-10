@@ -32,12 +32,14 @@ void panel_set_action()
     if (digit < '0' ||
 	strip == 3 && digit >= '2' ||
 	strip == 5 && digit >= '4' ||
-	strip == 6 && digit >= '3') {
+	strip == 6 && digit >= '4') {
       printError(F("protocol error"), F("Illegal panel argument"));
       return;
     }
     uint8_t panel = digit - '0';
-    panels.set(panel);
+    if (strip != 6 || panel < 3) { // Filter out virtual projector light
+      panels.set(panel);
+    }
   }
 
   char *intensityarg = sCmd.next();
