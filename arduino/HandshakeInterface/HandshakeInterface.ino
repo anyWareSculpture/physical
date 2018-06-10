@@ -19,6 +19,7 @@ PANEL-PULSE 5 3 100 white sleep
 PANEL-SET 6 0 100 sculpture1
 PANEL-SET 6 1 100 sculpture1
 PANEL-SET 6 2 100 sculpture1
+PANEL-SET 6 012 100 sculpture1
 
 PANEL-SET 3 0 100 rgb0
 PANEL-SET 3 1 100 rgb1
