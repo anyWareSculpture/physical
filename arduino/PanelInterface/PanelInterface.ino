@@ -125,7 +125,7 @@ void do_panel_set(uint8_t strip, PanelSet panels, uint8_t intensity, const CRGB 
 {
   CRGB newcol = applyIntensity(color, intensity);
   
-  for (uint8_t i=0;i<10;++i) {
+  for (uint8_t i=0;i<STRIP_LEDS;++i) {
     if (panels.get(i)) {
       const uint8_t panel = i;
       const Pair &p = LEDStripInterface::mapToLED(strip, panel);
@@ -151,9 +151,8 @@ void do_panel_set(uint8_t strip, PanelSet panels, uint8_t intensity, const CRGB 
 // FIXME: We don't currently support duration
 void do_panel_pulse(uint8_t strip, PanelSet panels, uint8_t intensity, const CRGB &color, AnywareEasing::EasingType  easing)
 {
-  for (uint8_t i=0;i<10;++i) {
-    if (panels.get(i)) {
-      const uint8_t panel = i;
+  for (uint8_t panel=0;panel<STRIP_LEDS;++panel) {
+    if (panels.get(panel)) {
       CRGB newcol = applyIntensity(color, intensity);
       const Pair &p = LEDStripInterface::mapToLED(strip, panel);
       if (p.stripid < 0 || p.pixelid < 0) {
