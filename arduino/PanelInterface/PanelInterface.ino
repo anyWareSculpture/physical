@@ -75,6 +75,7 @@ PANEL-SET 2 3 0 white
 
 #define ANYWARE_MAIN
 #include "configuration.h"
+#include "Controllers.h"
 
 void setup() {
   Serial.begin(115200);

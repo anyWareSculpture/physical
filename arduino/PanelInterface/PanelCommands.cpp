@@ -1,8 +1,10 @@
 #include "PanelInterface.h"
 #include "anyware_serial.h"
 #include "anyware_colors.h"
-#include "configuration.h"
 #include "PanelSet.h"
+
+#include "configuration.h"
+#include "Controllers.h"
 
 extern SerialCommand sCmd;
 
@@ -207,8 +209,8 @@ void setupCommands()
 void printCommands()
 { 
   Serial.println(F("SUPPORTED"));
-  printCommand("PANEL-SET", STRIPREGEXP);
-  printCommand("PANEL-PULSE", STRIPREGEXP);
-  printCommand("PANEL-INTENSITY", STRIPREGEXP);
+  printCommand("PANEL-SET", STRIPREGEXP(STRIPID));
+  printCommand("PANEL-PULSE", STRIPREGEXP(STRIPID));
+  printCommand("PANEL-INTENSITY", STRIPREGEXP(STRIPID));
   Serial.println(F("ENDSUPPORTED"));
 }

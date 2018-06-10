@@ -1,4 +1,1 @@
-#include "ControllerA.h"
-//#include "ControllerB.h"
-//#include "ControllerC.h"
-
+#define STRIPID 1

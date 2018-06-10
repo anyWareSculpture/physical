@@ -1,6 +1,3 @@
-#define STRIPID 0
-#define STRIPREGEXP " 0"
-
 #ifdef ANYWARE_MAIN
 
 // Pins
