@@ -109,48 +109,62 @@ void resetInterface(bool debug)
 
   global_debug = debug;
   Serial.println();
-  Serial.println("HELLO handshake V1.3");
+  Serial.println("HELLO handshake V1.4");
   if (global_debug) Serial.println("DEBUG handshake");
   printCommands();
 }
 
-void do_panel_set(uint8_t strip, uint8_t panel, uint8_t intensity, const CRGB &color, AnywareEasing::EasingType easing, uint16_t duration)
+void do_panel_set(uint8_t strip, PanelSet panels, uint8_t intensity, const CRGB &color, AnywareEasing::EasingType easing, uint16_t duration)
 {
   CRGB newcol = applyIntensity(color, intensity);
 
   if (strip == 3) {
     // Handle RGB strips
-    for (uint8_t i=0;i<3;i++) {
-      analogWrite(rgbStripPins[panel][i], 255-newcol[i]);
+    for (uint8_t panel=0;panel<2;panel++) {
+      if (panels.get(panel)) {
+	for (uint8_t c=0;c<3;c++) {
+	  analogWrite(rgbStripPins[panel][c], 255-newcol[c]);
+	}
+      }
     }
     return;
   }
   if (strip == 6) {
-    // Handle high-power LEDs
-    uint8_t pin = highPowerLEDs[panel];
-    digitalWrite(pin, intensity == 0 ? !highPowerOnState[panel] : highPowerOnState[panel]);
+    for (uint8_t panel=0;panel<3;panel++) {
+      if (panels.get(panel)) {
+	// Handle high-power LEDs
+	uint8_t pin = highPowerLEDs[panel];
+	digitalWrite(pin, intensity == 0 ? !highPowerOnState[panel] : highPowerOnState[panel]);
+      }
+    }
     return;
   }
 
-  const Pair &p = LEDStripInterface::mapToLED(strip, panel);
-  if (p.stripid < 0 || p.pixelid < 0) {
-    printError(F("client error"), F("Strip or panel out of range"));
-    Serial.print(p.stripid);Serial.print(" ");Serial.println(p.pixelid);
-    return;
+  for (uint8_t panel=0;panel<STRIP_LEDS;panel++) {
+    if (panels.get(panel)) {
+      const Pair &p = LEDStripInterface::mapToLED(strip, panel);
+      if (p.stripid < 0 || p.pixelid < 0) {
+	printError(F("client error"), F("Strip or panel out of range"));
+	Serial.print(p.stripid);Serial.print(" ");Serial.println(p.pixelid);
+	return;
+      }
+      LEDStripInterface &s = LEDStripInterface::getStrip(p.stripid);
+      if (easing == AnywareEasing::BINARY) {
+	s.setColor(p.pixelid, newcol);
+      }
+      else {
+	s.ease(p.pixelid, easing, newcol, duration);
+      }
+    }
   }
-  LEDStripInterface &s = LEDStripInterface::getStrip(p.stripid);
   if (easing == AnywareEasing::BINARY) {
-    s.setColor(p.pixelid, newcol);
     FastLED.show();
-  }
-  else {
-    s.ease(p.pixelid, easing, newcol, duration);
   }
 }
 
-void do_panel_pulse(uint8_t strip, uint8_t panel, uint8_t intensity, const CRGB &color, AnywareEasing::EasingType  easing, uint16_t duration)
+void do_panel_pulse(uint8_t strip, PanelSet panels, uint8_t intensity, const CRGB &color, AnywareEasing::EasingType  easing, uint16_t duration)
 {
-  do_panel_set(strip, panel, intensity, color, easing, duration);
+  do_panel_set(strip, panels, intensity, color, easing, duration);
 }
 
 void do_panel_intensity(uint8_t strip, uint8_t intensity)

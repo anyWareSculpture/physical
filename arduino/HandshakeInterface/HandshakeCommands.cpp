@@ -1,5 +1,6 @@
 #include "HandshakeInterface.h"
 #include "anyware_serial.h"
+#include "PanelSet.h"
 
 /*!
   PANEL-SET <strip> <panel> <intensity> <color> <easing> <duration>
@@ -24,12 +25,19 @@ void panel_set_action()
     printError(F("protocol error"), F("wrong # of parameters to PANEL-SET"));
     return;
   }
-  uint8_t panel = atoi(panelarg);
-  if (strip == 3 && panel >= 2 ||
-      strip == 5 && panel >= 4 ||
-      strip == 6 && panel >= 3) {
-    printError(F("protocol error"), F("Illegal panel argument"));
-    return;
+  PanelSet panels;
+  const uint8_t numPanels = strlen(panelarg);
+  for (uint8_t i=0;i<numPanels;++i) {
+    const char digit = panelarg[i];
+    if (digit < '0' ||
+	strip == 3 && digit >= '2' ||
+	strip == 5 && digit >= '4' ||
+	strip == 6 && digit >= '3') {
+      printError(F("protocol error"), F("Illegal panel argument"));
+      return;
+    }
+    uint8_t panel = digit - '0';
+    panels.set(panel);
   }
 
   char *intensityarg = sCmd.next();
@@ -71,7 +79,7 @@ void panel_set_action()
     Serial.print(F("DEBUG PANEL-SET received: "));
     Serial.print(strip);
     Serial.print(" ");
-    Serial.print(panel);
+    Serial.print(panels.panels);
     Serial.print(" ");
     Serial.print(intensity);
     Serial.print(" ");
@@ -82,7 +90,7 @@ void panel_set_action()
     Serial.print(duration);
     Serial.println();
   }
-  do_panel_set(strip, panel, intensity, color, easing, duration);
+  do_panel_set(strip, panels, intensity, color, easing, duration);
 }
 
 /*!
@@ -108,12 +116,19 @@ void panel_pulse_action()
     printError(F("protocol error"), F("wrong # of parameters to PANEL-PULSE"));
     return;
   }
-  uint8_t panel = atoi(panelarg);
-  if (strip == 3 && panel >= 2 ||
-      strip == 5 && panel >= 4 ||
-      strip == 6 && panel >= 3) {
-    printError(F("protocol error"), F("Illegal panel argument"));
-    return;
+  PanelSet panels;
+  const uint8_t numPanels = strlen(panelarg);
+  for (uint8_t i=0;i<numPanels;++i) {
+    const char digit = panelarg[i];
+    if (digit < '0' ||
+	strip == 3 && digit >= '2' ||
+	strip == 5 && digit >= '4' ||
+	strip == 6 && digit >= '3') {
+      printError(F("protocol error"), F("Illegal panel argument"));
+      return;
+    }
+    uint8_t panel = digit - '0';
+    panels.set(panel);
   }
 
   char *intensityarg = sCmd.next();
@@ -155,7 +170,7 @@ void panel_pulse_action()
     Serial.print(F("DEBUG PANEL-PULSE received: "));
     Serial.print(strip);
     Serial.print(" ");
-    Serial.print(panel);
+    Serial.print(panels.panels);
     Serial.print(" ");
     Serial.print(intensity);
     Serial.print(" ");
@@ -166,7 +181,7 @@ void panel_pulse_action()
     Serial.print(duration);
     Serial.println();
   }
-  do_panel_pulse(strip, panel, intensity, color, easing, duration);
+  do_panel_pulse(strip, panels, intensity, color, easing, duration);
 }
 
 /*!
